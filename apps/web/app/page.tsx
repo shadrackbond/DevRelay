@@ -44,10 +44,10 @@ export default function Home() {
         <div className="grid">
           <article className="panel">
             <div className="panelTitle">
-              <h2>Production checkout failing</h2>
+              <h2><a className="incidentLink" href="/incidents/1042">Production checkout failing</a></h2>
               <span className="critical">Critical</span>
             </div>
-            <p className="muted">Incident #1042 · investigation in progress</p>
+            <p className="muted">Incident #1042 · investigation ready · <a className="inlineLink" href="/incidents/1042">open investigation →</a></p>
             <div className="diagnosis">
               <span>Root-cause hypothesis</span>
               <strong>Database connection pool saturation</strong>
