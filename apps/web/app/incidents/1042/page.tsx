@@ -1,0 +1,207 @@
+import { runCheckoutInvestigation } from "@devrelay/core";
+import { ApprovalGate } from "../../components/ApprovalGate";
+
+const kindLabel: Record<string, string> = {
+  repository: "GitHub",
+  ci: "CI/CD",
+  logs: "Runtime logs",
+  database: "Database",
+  monitoring: "Monitoring",
+  docs: "Documentation",
+};
+
+export default async function IncidentPage() {
+  const { packet, stages } = await runCheckoutInvestigation();
+  const confidence = Math.round(packet.hypothesis.confidence * 100);
+
+  const lowBandwidth = [
+    "INCIDENT #1042",
+    "CAUSE: DB pool saturation",
+    "TRIGGER: PR #483",
+    "DB: 100/100 active, 56 waiting",
+    "ERRORS: 1,248 timeouts",
+    "CONFIDENCE: " + confidence + "%",
+    "ACTION: reduce workers 80 -> 30",
+    "APPROVAL: REQUIRED",
+  ].join("\n");
+
+  return (
+    <main className="incidentShell">
+      <div className="incidentTopbar">
+        <a className="backLink" href="/">← Command Center</a>
+        <span className="critical">Critical</span>
+      </div>
+
+      <section className="incidentHero">
+        <div>
+          <p className="eyebrow">INCIDENT #{packet.incident.id}</p>
+          <h1>{packet.incident.title}</h1>
+          <p className="muted">{packet.incident.description}</p>
+        </div>
+        <div className="confidenceBadge">
+          <strong>{confidence}%</strong>
+          <span>confidence</span>
+        </div>
+      </section>
+
+      <div className="investigationGrid">
+        <section className="panel">
+          <span className="sectionLabel">Root-cause diagnosis</span>
+          <h2 className="rootCause">{packet.hypothesis.statement}</h2>
+          <p className="muted">
+            DevRelay correlated repository change history, CI coverage, runtime
+            failures, and live database pressure.
+          </p>
+
+          <div className="evidenceGrid">
+            {packet.evidence.map((item) => (
+              <article className="evidenceCard" key={item.id}>
+                <div className="evidenceHeader">
+                  <strong>{kindLabel[item.kind] ?? item.kind}</strong>
+                  <span className="fresh">{item.freshness}</span>
+                </div>
+                <p>{item.summary}</p>
+                <code>{item.id}</code>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <aside className="panel">
+          <span className="sectionLabel">Investigation timeline</span>
+          <div className="timeline">
+            {stages.map((stage, index) => (
+              <div className="timelineItem" key={stage.agent}>
+                <div className="timelineIndex">{index + 1}</div>
+                <div>
+                  <strong>{stage.label}</strong>
+                  <p>{stage.detail}</p>
+                  <span className={stage.status === "awaiting-approval" ? "waiting" : "done"}>
+                    {stage.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </div>
+
+      <section className="panel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">Evidence reasoning</span>
+            <h2>Why DevRelay reached this conclusion</h2>
+          </div>
+          <span className="confidencePill">{confidence}% confidence</span>
+        </div>
+
+        <div className="reasoningChain">
+          <div>
+            <span>1 · Change</span>
+            <strong>PR #483</strong>
+            <p>Concurrency increased 4× shortly before incident onset.</p>
+          </div>
+          <div className="arrow">→</div>
+          <div>
+            <span>2 · Runtime</span>
+            <strong>1,248 timeouts</strong>
+            <p>Requests fail while acquiring DB connections.</p>
+          </div>
+          <div className="arrow">→</div>
+          <div>
+            <span>3 · Database</span>
+            <strong>100/100 active</strong>
+            <p>56 additional requests are waiting for a connection.</p>
+          </div>
+          <div className="arrow">→</div>
+          <div>
+            <span>4 · Root cause</span>
+            <strong>Pool saturation</strong>
+            <p>Worker concurrency exceeds safe DB capacity.</p>
+          </div>
+        </div>
+
+        <div className="twoColumn">
+          <div className="callout warn">
+            <span className="sectionLabel">Contradiction handled</span>
+            <strong>CI was green</strong>
+            <p>{packet.hypothesis.contradictions[0]}</p>
+          </div>
+          <div className="callout">
+            <span className="sectionLabel">Missing evidence</span>
+            <strong>Still to verify</strong>
+            <p>{packet.hypothesis.missingEvidence[0]}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <span className="sectionLabel">Recommended response</span>
+        <div className="actionList">
+          {packet.actions.map((action) => (
+            <article key={action.id}>
+              <div>
+                <strong>{action.description}</strong>
+                <p>Risk: {action.risk} · Approval: {action.approval}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+        <ApprovalGate />
+      </section>
+
+      <section className="panel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">Borderless relay</span>
+            <h2>Same diagnosis. Different presentation.</h2>
+          </div>
+        </div>
+        <div className="relayGrid">
+          <article className="relayCard">
+            <span>Technical English</span>
+            <strong>Database pool saturation</strong>
+            <p>
+              PR #483 increased checkout worker concurrency beyond the safe
+              capacity of the production DB pool, causing acquisition timeouts.
+            </p>
+          </article>
+          <article className="relayCard">
+            <span>Kiswahili</span>
+            <strong>Msongamano wa miunganisho ya database</strong>
+            <p>
+              PR #483 iliongeza idadi ya workers za checkout kupita uwezo salama
+              wa database, hivyo maombi yakaanza kusubiri na ku-timeout.
+            </p>
+          </article>
+          <article className="relayCard">
+            <span>Plain language</span>
+            <strong>Too many requests need the database at once</strong>
+            <p>
+              A recent change made checkout handle much more work at the same
+              time. The database only has 100 available connections, so requests
+              are queueing and failing.
+            </p>
+          </article>
+          <article className="relayCard lowBandwidth">
+            <span>Low-bandwidth text</span>
+            <pre>{lowBandwidth}</pre>
+          </article>
+        </div>
+      </section>
+
+      <section className="panel">
+        <span className="sectionLabel">Audit trail</span>
+        <div className="auditList">
+          {packet.audit.map((entry, index) => (
+            <div key={index}>
+              <code>{new Date(entry.timestamp).toISOString().slice(11, 19)}</code>
+              <strong>{entry.actor}</strong>
+              <span>{entry.action}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
