@@ -146,12 +146,7 @@ function rankCommit(
     title: commit.message.split("\n")[0].slice(0, 120),
     url: commit.htmlUrl,
     occurredAt: commit.date,
-    score: Math.min(
-      100,
-      pull.mergedAt
-        ? lexical.points + temporal.points + service.points
-        : Math.min(19, lexical.points + temporal.points + service.points),
-    ),
+    score: Math.min(100, lexical.points + temporal.points + service.points),
     reasons,
     files: [],
   };
@@ -184,7 +179,12 @@ function rankPullRequest(
     title: `PR #${pull.number}: ${pull.title}`,
     url: pull.htmlUrl,
     occurredAt: pull.mergedAt ?? pull.updatedAt,
-    score: Math.min(100, lexical.points + temporal.points + service.points),
+    score: Math.min(
+      100,
+      pull.mergedAt
+        ? lexical.points + temporal.points + service.points
+        : Math.min(19, lexical.points + temporal.points + service.points),
+    ),
     reasons,
     files: pull.files.slice(0, 12),
   };
