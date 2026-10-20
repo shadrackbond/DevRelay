@@ -75,9 +75,13 @@ function temporalScore(occurredAt: string | null, incidentAt: string): {
 } {
   if (!occurredAt) return { points: 0 };
 
-  const deltaHours = Math.abs(
-    new Date(incidentAt).getTime() - new Date(occurredAt).getTime(),
-  ) / 3_600_000;
+  const incidentTime = new Date(incidentAt).getTime();
+  const changeTime = new Date(occurredAt).getTime();
+  const deltaHours = (incidentTime - changeTime) / 3_600_000;
+
+  if (deltaHours < -0.25) {
+    return { points: 0, reason: "Occurred after incident intake; retained as context, not causal evidence." };
+  }
 
   if (deltaHours <= 6) {
     return { points: 35, reason: "Changed within 6 hours of incident intake." };
@@ -142,7 +146,12 @@ function rankCommit(
     title: commit.message.split("\n")[0].slice(0, 120),
     url: commit.htmlUrl,
     occurredAt: commit.date,
-    score: Math.min(100, lexical.points + temporal.points + service.points),
+    score: Math.min(
+      100,
+      pull.mergedAt
+        ? lexical.points + temporal.points + service.points
+        : Math.min(19, lexical.points + temporal.points + service.points),
+    ),
     reasons,
     files: [],
   };
@@ -155,10 +164,12 @@ function rankPullRequest(
 ): RepositoryCandidate {
   const text = `${pull.title} ${pull.body}`;
   const lexical = overlapScore(incidentTokens, [text, ...pull.files].join(" "));
-  const temporal = temporalScore(pull.mergedAt ?? pull.updatedAt, incident.createdAt);
+  const effectiveTime = pull.mergedAt ?? pull.updatedAt;
+  const temporal = temporalScore(effectiveTime, incident.createdAt);
   const service = serviceScore(incident.service, pull.files, text);
   const reasons: string[] = [];
 
+  if (!pull.mergedAt) reasons.push("Pull request is not merged; treated as context rather than a deployed change.");
   if (temporal.reason) reasons.push(temporal.reason);
   if (lexical.matches.length) {
     reasons.push(`Shares incident terms: ${lexical.matches.join(", ")}.`);
