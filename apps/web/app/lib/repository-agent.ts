@@ -227,7 +227,7 @@ export async function runRepositoryAgent(
     };
   }
 
-  const provider = new GitHubRepositoryProvider();
+  const provider = new GitHubRepositoryProvider(process.env.GITHUB_TOKEN);
   const since = new Date(
     new Date(incident.createdAt).getTime() - 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
