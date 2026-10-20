@@ -35,7 +35,7 @@ export function NewInvestigationForm() {
           placeholder="github.com/owner/repository or owner/repository"
         />
         <small className="fieldHint">
-          Public repositories work without a token. Private repositories require GITHUB_TOKEN.
+          Set GITHUB_TOKEN for reliable GitHub access. Public repositories can hit anonymous rate limits; private repositories require a token.
         </small>
       </label>
 

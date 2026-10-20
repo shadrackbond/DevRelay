@@ -30,7 +30,7 @@ export default function IntegrationsPage() {
             <p className="muted">{description}</p>
             {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs" || name === "PostgreSQL") && (
               <div className="integrationDetails">
-                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : name === "PostgreSQL" ? "Configure DB_TELEMETRY_URL" : "Public repos: no token required"}</span>
+                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : name === "PostgreSQL" ? "Configure DB_TELEMETRY_URL" : "Configure GITHUB_TOKEN to avoid anonymous rate limits"}</span>
                 <span>{name === "Runtime Logs" ? "Optional LOG_SOURCE_TOKEN bearer auth" : name === "PostgreSQL" ? "Optional DB_TELEMETRY_TOKEN bearer auth" : "Private repos: GITHUB_TOKEN required"}</span>
                 <span>Read-only investigation</span>
               </div>
