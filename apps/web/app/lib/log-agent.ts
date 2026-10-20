@@ -52,10 +52,10 @@ function normalizeMessage(message: string): string {
   return message
     .toLowerCase()
     .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, "<id>")
-    .replace(/[0-9a-f]{7,40}/gi, "<sha>")
-    .replace(/d{2,}/g, "<n>")
-    .replace(/https?://S+/g, "<url>")
-    .replace(/s+/g, " ")
+    .replace(/\\b[0-9a-f]{7,40}\\b/gi, "<sha>")
+    .replace(/\\b\\d{2,}\\b/g, "<n>")
+    .replace(/https?:\\/\\/\\S+/g, "<url>")
+    .replace(/\\s+/g, " ")
     .trim();
 }
 
