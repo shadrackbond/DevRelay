@@ -12,6 +12,7 @@ export interface RepositoryCandidate {
   type: "commit" | "pull-request";
   title: string;
   url: string;
+  sha: string;
   occurredAt: string | null;
   score: number;
   reasons: string[];
@@ -145,6 +146,7 @@ function rankCommit(
     type: "commit",
     title: (commit.message.split("\n")[0] ?? commit.sha).slice(0, 120),
     url: commit.htmlUrl,
+    sha: commit.sha,
     occurredAt: commit.date,
     score: Math.min(100, lexical.points + temporal.points + service.points),
     reasons,
@@ -178,6 +180,7 @@ function rankPullRequest(
     type: "pull-request",
     title: `PR #${pull.number}: ${pull.title}`,
     url: pull.htmlUrl,
+    sha: pull.mergeCommitSha ?? pull.headSha,
     occurredAt: pull.mergedAt ?? pull.updatedAt,
     score: Math.min(
       100,

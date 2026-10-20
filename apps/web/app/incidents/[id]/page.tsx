@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
+import { runCiAgent } from "../../lib/ci-agent";
 import { getStoredIncident } from "../../lib/incident-store";
 import { runRepositoryAgent } from "../../lib/repository-agent";
 
@@ -13,6 +14,12 @@ function scoreClass(score: number) {
   return "scoreLow";
 }
 
+function signalClass(signal: string) {
+  if (signal === "supports") return "signalSupports";
+  if (signal === "contradicts") return "signalContradicts";
+  return "signalNeutral";
+}
+
 export default async function DynamicIncidentPage({
   params,
 }: {
@@ -24,7 +31,11 @@ export default async function DynamicIncidentPage({
   if (!incident) notFound();
 
   const repositoryResult = await runRepositoryAgent(incident);
+  const ciResult = await runCiAgent(incident, repositoryResult);
+
   const repositoryReady = repositoryResult.status === "complete";
+  const ciReady = ciResult.status === "complete";
+  const completedAgents = [repositoryReady, ciReady].filter(Boolean).length;
 
   const evidencePlan = [
     {
@@ -36,8 +47,10 @@ export default async function DynamicIncidentPage({
     },
     {
       agent: "CI Agent",
-      detail: "Builds, tests, failed jobs, deployment checks",
-      status: "awaiting",
+      detail: ciReady
+        ? `Inspected ${ciResult.inspectedRuns} GitHub Actions workflow runs and correlated them to repository candidates.`
+        : "GitHub Actions inspection failed.",
+      status: ciReady ? "complete" : "error",
     },
     {
       agent: "Log Agent",
@@ -65,7 +78,7 @@ export default async function DynamicIncidentPage({
           <p className="muted">{incident.description}</p>
         </div>
         <div className="stateBadge">
-          <strong>{repositoryReady ? "Repository evidence collected" : "Repository check failed"}</strong>
+          <strong>{completedAgents}/4 evidence agents complete</strong>
           <span>investigation state</span>
         </div>
       </section>
@@ -196,25 +209,138 @@ export default async function DynamicIncidentPage({
         )}
       </section>
 
+      <section className="panel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">CI Agent</span>
+            <h2>GitHub Actions correlation</h2>
+          </div>
+          {ciReady && (
+            <span className="statusBadge">{ciResult.inspectedRuns} workflow runs inspected</span>
+          )}
+        </div>
+
+        {ciResult.status === "error" ? (
+          <div className="providerError">
+            <strong>CI inspection failed</strong>
+            <p>{ciResult.error}</p>
+          </div>
+        ) : (
+          <>
+            <p className="muted">{ciResult.summary}</p>
+
+            {ciResult.findings.length > 0 ? (
+              <div className="ciFindingList">
+                {ciResult.findings.map((finding) => (
+                  <article className="ciFindingCard" key={finding.candidateId}>
+                    <div className="candidateTopline">
+                      <div>
+                        <span className="sectionLabel">Candidate</span>
+                        <strong>{finding.candidateTitle}</strong>
+                      </div>
+                      <span className={`ciSignal ${signalClass(finding.signal)}`}>
+                        {finding.signal}
+                      </span>
+                    </div>
+
+                    <p>{finding.summary}</p>
+
+                    {finding.matchedRuns.length > 0 ? (
+                      <div className="workflowRunList">
+                        {finding.matchedRuns.map((run) => (
+                          <div className="workflowRun" key={run.id}>
+                            <div className="workflowRunHeader">
+                              <div>
+                                <strong>{run.name}</strong>
+                                <span>{run.event} · {run.conclusion ?? "in progress"}</span>
+                              </div>
+                              <a href={run.htmlUrl} target="_blank" rel="noreferrer">
+                                Open run ↗
+                              </a>
+                            </div>
+
+                            <div className="ciMetaGrid">
+                              <div>
+                                <span>Detected validation</span>
+                                <strong>
+                                  {run.validationCategories.length
+                                    ? run.validationCategories.join(", ")
+                                    : "None detected"}
+                                </strong>
+                              </div>
+                              <div>
+                                <span>Missing validation</span>
+                                <strong>
+                                  {run.missingValidationCategories.length
+                                    ? run.missingValidationCategories.join(", ")
+                                    : "None"}
+                                </strong>
+                              </div>
+                            </div>
+
+                            {run.failedJobs.length > 0 && (
+                              <div className="failureBox">
+                                <strong>Failed jobs</strong>
+                                <span>{run.failedJobs.join(", ")}</span>
+                              </div>
+                            )}
+
+                            {run.failedSteps.length > 0 && (
+                              <div className="failureBox">
+                                <strong>Failed steps</strong>
+                                <span>{run.failedSteps.join(", ")}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted">
+                        No workflow run matched SHA {finding.candidateSha.slice(0, 7)}.
+                      </p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="emptyQueue">
+                <strong>No CI findings to correlate.</strong>
+                <p className="muted">
+                  DevRelay needs a sufficiently relevant repository candidate before CI can strengthen or weaken it.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
       <section className="panel emptyReasoningState">
-        <span className="sectionLabel">Reasoning state</span>
+        <span className="sectionLabel">Cross-agent reasoning state</span>
         <h2>No final root-cause claim yet</h2>
         <p>
-          Repository evidence alone can identify suspicious changes, but it cannot
-          establish causality. DevRelay needs runtime, CI, or infrastructure evidence
-          before promoting a repository candidate into a root-cause hypothesis.
+          DevRelay can now correlate repository changes with CI outcomes, but a green
+          or red pipeline still does not establish production causality. Runtime or
+          infrastructure evidence is required before a candidate is promoted into a
+          root-cause hypothesis.
         </p>
 
-        <div className="nextEvidence">
-          <strong>Current repository evidence</strong>
-          <span>
-            {repositoryResult.evidence.length} normalized evidence item(s) are ready
-            for cross-agent correlation.
-          </span>
+        <div className="reasoningEvidenceSummary">
+          <div>
+            <span>Repository evidence</span>
+            <strong>{repositoryResult.evidence.length}</strong>
+          </div>
+          <div>
+            <span>CI evidence</span>
+            <strong>{ciResult.evidence.length}</strong>
+          </div>
+          <div>
+            <span>Total normalized evidence</span>
+            <strong>{repositoryResult.evidence.length + ciResult.evidence.length}</strong>
+          </div>
         </div>
 
         <a className="primaryButton" href="/integrations">
-          Continue with CI/log integrations →
+          Continue with runtime logs →
         </a>
       </section>
     </AppShell>

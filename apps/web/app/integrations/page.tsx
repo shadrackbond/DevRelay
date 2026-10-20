@@ -2,7 +2,7 @@ import { AppShell } from "../components/AppShell";
 
 const integrations = [
   ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Live"],
-  ["GitHub Actions", "CI/CD run evidence", "Next"],
+  ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Live"],
   ["Runtime Logs", "Application failure signals", "Planned"],
   ["PostgreSQL", "Connection-pool and query-health signals", "Planned"],
 ];
@@ -28,7 +28,7 @@ export default function IntegrationsPage() {
               <span className={status === "Live" ? "done" : "statusBadge"}>{status}</span>
             </div>
             <p className="muted">{description}</p>
-            {name === "GitHub" && (
+            {(name === "GitHub" || name === "GitHub Actions") && (
               <div className="integrationDetails">
                 <span>Public repos: no token required</span>
                 <span>Private repos: GITHUB_TOKEN required</span>

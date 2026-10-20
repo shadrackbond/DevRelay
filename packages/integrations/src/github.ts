@@ -20,6 +20,8 @@ export interface GitHubPullRequestSummary {
   mergedAt: string | null;
   updatedAt: string;
   htmlUrl: string;
+  headSha: string;
+  mergeCommitSha: string | null;
   files: string[];
 }
 
@@ -161,6 +163,8 @@ export class GitHubRepositoryProvider {
         merged_at: string | null;
         updated_at: string;
         html_url: string;
+        head: { sha: string };
+        merge_commit_sha: string | null;
       }>
     >(
       `/repos/${ref.owner}/${ref.repo}/pulls?state=all&sort=updated&direction=desc&per_page=${maxPullRequests}`,
@@ -202,6 +206,8 @@ export class GitHubRepositoryProvider {
         mergedAt: pull.merged_at,
         updatedAt: pull.updated_at,
         htmlUrl: pull.html_url,
+        headSha: pull.head.sha,
+        mergeCommitSha: pull.merge_commit_sha,
         files,
       })),
       fetchedAt: new Date().toISOString(),
