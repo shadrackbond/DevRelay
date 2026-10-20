@@ -376,7 +376,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
       { candidate: retry, signal: "neutral", score: 35 },
       { candidate: cssChange, signal: "neutral", score: 20 },
     ],
-    requiresApproval: true,
+    requiresApproval: false,
   }),
   benchmark({
     id: "BENCH-004",
@@ -396,7 +396,7 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
       { candidate: auth, signal: "neutral", score: 30 },
       { candidate: docs, signal: "neutral", score: 20 },
     ],
-    requiresApproval: true,
+    requiresApproval: false,
   }),
   benchmark({
     id: "BENCH-005",
