@@ -1,12 +1,12 @@
 import type { Evidence } from "@devrelay/core";
-import type { CiAgentResult } from "../lib/ci-agent";
-import type { DatabaseAgentResult } from "../lib/database-agent";
-import type { StoredIncident } from "../lib/incident-store";
-import type { LogAgentResult } from "../lib/log-agent";
+import type { CiAgentResult } from "../app/lib/ci-agent";
+import type { DatabaseAgentResult } from "../app/lib/database-agent";
+import type { StoredIncident } from "../app/lib/incident-store";
+import type { LogAgentResult } from "../app/lib/log-agent";
 import type {
   RepositoryAgentResult,
   RepositoryCandidate,
-} from "../lib/repository-agent";
+} from "../app/lib/repository-agent";
 import type { BenchmarkCase } from "./harness";
 
 const T0 = "2026-10-20T08:00:00.000Z";
