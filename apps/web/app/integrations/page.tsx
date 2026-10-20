@@ -3,7 +3,7 @@ import { AppShell } from "../components/AppShell";
 const integrations = [
   ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Live"],
   ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Live"],
-  ["Runtime Logs", "Application failure signals", "Planned"],
+  ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation", "Live"],
   ["PostgreSQL", "Connection-pool and query-health signals", "Planned"],
 ];
 
@@ -28,10 +28,10 @@ export default function IntegrationsPage() {
               <span className={status === "Live" ? "done" : "statusBadge"}>{status}</span>
             </div>
             <p className="muted">{description}</p>
-            {(name === "GitHub" || name === "GitHub Actions") && (
+            {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs") && (
               <div className="integrationDetails">
-                <span>Public repos: no token required</span>
-                <span>Private repos: GITHUB_TOKEN required</span>
+                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : "Public repos: no token required"}</span>
+                <span>{name === "Runtime Logs" ? "Optional LOG_SOURCE_TOKEN bearer auth" : "Private repos: GITHUB_TOKEN required"}</span>
                 <span>Read-only investigation</span>
               </div>
             )}
