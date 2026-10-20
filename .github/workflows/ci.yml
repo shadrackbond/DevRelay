@@ -5,16 +5,75 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
+    name: Validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: "true"
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm build
+
+      - name: Environment details
+        run: |
+          node --version
+          pnpm --version
+
+      - name: Install dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        id: typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        id: build
+        run: pnpm build
+
+      - name: Capture failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-failure-diagnostics-${{ github.run_id }}
+          path: |
+            **/pnpm-debug.log
+            apps/web/.next/trace
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Post-process CI summary
+        if: always()
+        run: |
+          {
+            echo "## DevRelay CI Summary"
+            echo ""
+            echo "| Stage | Result |"
+            echo "| --- | --- |"
+            echo "| Install | \`${{ steps.install.outcome }}\` |"
+            echo "| Typecheck | \`${{ steps.typecheck.outcome }}\` |"
+            echo "| Build | \`${{ steps.build.outcome }}\` |"
+            echo ""
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Ref: \`${{ github.ref_name }}\`"
+            echo "- Run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } >> "$GITHUB_STEP_SUMMARY"
