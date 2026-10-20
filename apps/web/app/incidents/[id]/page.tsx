@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
+import { BorderlessRelay } from "../../components/BorderlessRelay";
 import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
 import { getStoredIncident } from "../../lib/incident-store";
@@ -668,6 +669,8 @@ export default async function DynamicIncidentPage({
           </>
         ) : null}
       </section>
+
+      <BorderlessRelay packet={reasoningResult.packet} />
 
       <section className="panel">
         <span className="sectionLabel">Canonical Reasoning Packet</span>
