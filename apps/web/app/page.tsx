@@ -1,69 +1,79 @@
-import { AppShell } from "./components/AppShell";
+import Link from "next/link";
+import { runCheckoutInvestigation } from "@devrelay/core";
+import { listStoredIncidents } from "./lib/incident-store";
 
-const stats = [
-  ["5", "Active incidents"],
-  ["3", "Investigating"],
-  ["1", "Awaiting approval"],
-  ["4", "Connected sources"],
-];
+export const metadata = { title: "Command center" };
 
-export default function Home() {
+export default async function Home() {
+  const [{ packet, stages }, stored] = await Promise.all([
+    runCheckoutInvestigation(),
+    listStoredIncidents(),
+  ]);
+
   return (
-    <AppShell active="Command Center">
-      <header>
+    <>
+      <header className="pageHeader">
         <div>
-          <p className="eyebrow">OMEGA AI AGENTS · AGENT WITHOUT BORDERS</p>
-          <h1>Command Center</h1>
-          <p className="muted">
-            One incident model. Multiple tools, languages, and connectivity conditions.
-          </p>
+          <h1>Command center</h1>
+          <p className="muted">From the first signal to a response you can trust.</p>
         </div>
-        <a className="primaryButton" href="/investigations/new">+ New investigation</a>
+        <Link className="primaryButton" href="/investigations/new"><span aria-hidden="true">+</span> New investigation</Link>
       </header>
 
-      <div className="stats">
-        {stats.map(([value, label]) => (
-          <article className="card" key={label}>
-            <strong>{value}</strong>
-            <span>{label}</span>
-          </article>
-        ))}
-      </div>
+      <section className="overviewStrip" aria-label="Workspace overview">
+        <div><strong>{stored.length}</strong><span>Your incidents</span></div>
+        <div><strong>1</strong><span>Demo investigation</span></div>
+        <div><strong>{packet.evidence.length}</strong><span>Demo evidence sources</span></div>
+        <Link href="/incidents">View incident queue <span aria-hidden="true">↗</span></Link>
+      </section>
 
+      <div className="sectionHeading"><h2>Needs your attention</h2><span className="muted">Demo scenario</span></div>
       <div className="grid">
-        <article className="panel">
-          <div className="panelTitle">
-            <h2><a className="incidentLink" href="/incidents/1042">Production checkout failing</a></h2>
-            <span className="critical">Critical</span>
-          </div>
-          <p className="muted">
-            Incident #1042 · investigation ready ·{" "}
-            <a className="inlineLink" href="/incidents/1042">open investigation →</a>
-          </p>
+        <article className="panel priorityIncident">
+          <div className="incidentMeta"><span className="critical">Critical</span><span>#1042</span><span>{packet.incident.service}</span></div>
+          <h2><Link className="incidentLink" href="/incidents/1042">{packet.incident.title}</Link></h2>
+          <p className="muted">{packet.incident.description}</p>
           <div className="diagnosis">
-            <span>Root-cause hypothesis</span>
-            <strong>Database connection pool saturation</strong>
-            <p>
-              PR #483 increased concurrent database connections beyond the
-              production pool limit.
-            </p>
-            <div className="confidence">91% confidence · 4 evidence sources</div>
+            <div className="panelTitle"><span className="sectionLabel">Root-cause hypothesis</span><span className="confidencePill">{Math.round(packet.hypothesis.confidence * 100)}% confidence</span></div>
+            <h3>Database connection pool saturation</h3>
+            <p>{packet.hypothesis.statement}</p>
           </div>
+          <div className="evidenceSummary">
+            <div><span>Code change</span><strong>PR #483</strong></div>
+            <div><span>DB timeouts</span><strong>1,248</strong></div>
+            <div><span>Connections</span><strong>100 / 100</strong></div>
+            <div><span>CI coverage</span><strong>Gap found</strong></div>
+          </div>
+          <div className="panelFooter"><span className="done">Investigation ready</span><Link className="inlineLink" href="/incidents/1042">Explore the evidence <span aria-hidden="true">↗</span></Link></div>
         </article>
 
-        <article className="panel">
-          <div className="panelTitle">
-            <h2>Agents</h2>
-            <a className="inlineLink" href="/agents">View all →</a>
-          </div>
-          <ul className="agentList">
-            <li><span>Coordinator</span><b>Planning</b></li>
-            <li><span>Repository Agent</span><b>Complete</b></li>
-            <li><span>Log Agent</span><b>Complete</b></li>
-            <li><span>Reasoning Agent</span><b>Correlating</b></li>
-          </ul>
-        </article>
+        <aside className="responsePanel" aria-label="Recommended response">
+          <span className="waiting">Approval required</span>
+          <h2>A clear next step.<br />You make the call.</h2>
+          <p>Reduce checkout worker concurrency to relieve pressure on the database.</p>
+          <div className="workerChange"><span>Workers</span><div><s>80</s><span aria-hidden="true">→</span><strong>30</strong></div></div>
+          <Link className="primaryButton" href="/incidents/1042#response">Review recommended response</Link>
+          <p className="smallText">Demo only. Approval does not change production.</p>
+        </aside>
       </div>
-    </AppShell>
+
+      <div className="dashboardBottom">
+        <section className="panel">
+          <div className="panelTitle"><h2>Investigation team</h2><Link className="inlineLink" href="/agents">View agents</Link></div>
+          <p className="muted">Specialists working from the same evidence.</p>
+          <ul className="agentList">
+            {stages.slice(0, 5).map((stage) => (
+              <li key={stage.agent}><span>{stage.label}</span><span className="done">Complete</span></li>
+            ))}
+          </ul>
+        </section>
+        <section className="relayIntro">
+          <div className="relaySymbol" aria-hidden="true"><span /><span /><span /></div>
+          <h2>One diagnosis.<br />A shared understanding.</h2>
+          <p className="muted">Technical detail, plain language, Kiswahili, or low-bandwidth text. The evidence stays the same.</p>
+          <Link className="inlineLink" href="/incidents/1042#relay">Explore borderless relay <span aria-hidden="true">↗</span></Link>
+        </section>
+      </div>
+    </>
   );
 }

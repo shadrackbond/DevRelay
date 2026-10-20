@@ -1,4 +1,3 @@
-import { AppShell } from "../components/AppShell";
 
 const agents = [
   ["Coordinator Agent", "Plans and delegates investigation work", "Ready"],
@@ -9,12 +8,13 @@ const agents = [
   ["Reasoning Agent", "Correlates evidence into hypotheses", "Ready"],
 ];
 
+export const metadata = { title: "Agent registry" };
+
 export default function AgentsPage() {
   return (
-    <AppShell active="Agents">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">AGENTS</p>
           <h1>Agent registry</h1>
           <p className="muted">Specialized agents participating in DevRelay investigations.</p>
         </div>
@@ -28,6 +28,6 @@ export default function AgentsPage() {
           </article>
         ))}
       </div>
-    </AppShell>
+    </>
   );
 }

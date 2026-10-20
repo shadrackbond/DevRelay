@@ -1,18 +1,19 @@
-import { AppShell } from "../components/AppShell";
+import Link from "next/link";
 import { listStoredIncidents } from "../lib/incident-store";
+
+export const metadata = { title: "Investigations" };
 
 export default async function InvestigationsPage() {
   const stored = await listStoredIncidents();
 
   return (
-    <AppShell active="Investigations">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">INVESTIGATIONS</p>
           <h1>Investigation workspace</h1>
           <p className="muted">Track ready analyses and incidents waiting for evidence.</p>
         </div>
-        <a className="primaryButton" href="/investigations/new">+ New investigation</a>
+        <Link className="primaryButton" href="/investigations/new">+ New investigation</Link>
       </header>
 
       <div className="cardGrid">
@@ -22,18 +23,18 @@ export default async function InvestigationsPage() {
           <p className="muted">
             Checkout failures correlated across repository, CI, logs, and database evidence.
           </p>
-          <a className="inlineLink" href="/incidents/1042">Open investigation →</a>
+          <Link className="inlineLink" href="/incidents/1042">Open investigation</Link>
         </article>
 
         {stored.map((incident) => (
           <article className="panel" key={incident.id}>
-            <span className="waiting">Awaiting evidence</span>
+            <span className="statusBadge">{incident.status.replaceAll("-", " ")}</span>
             <h2>{incident.title}</h2>
             <p className="muted">{incident.service} · {incident.severity}</p>
-            <a className="inlineLink" href={`/incidents/${incident.id}`}>Open investigation →</a>
+            <Link className="inlineLink" href={`/incidents/${incident.id}`}>Open investigation</Link>
           </article>
         ))}
       </div>
-    </AppShell>
+    </>
   );
 }

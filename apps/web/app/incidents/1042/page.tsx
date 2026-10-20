@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { runCheckoutInvestigation } from "@devrelay/core";
 import { ApprovalGate } from "../../components/ApprovalGate";
+
+export const metadata = { title: "Checkout demo investigation" };
 
 const kindLabel: Record<string, string> = {
   repository: "GitHub",
@@ -26,15 +29,15 @@ export default async function IncidentPage() {
   ].join("\n");
 
   return (
-    <main className="incidentShell">
+    <div className="incidentShell">
       <div className="incidentTopbar">
-        <a className="backLink" href="/">← Command Center</a>
-        <span className="critical">Critical</span>
+        <Link className="backLink" href="/incidents">← Incident queue</Link>
+        <span className="statusBadge">Demo investigation</span>
       </div>
 
       <section className="incidentHero">
         <div>
-          <p className="eyebrow">INCIDENT #{packet.incident.id}</p>
+          <p className="eyebrow"><span className="critical">Critical</span> Incident #{packet.incident.id}</p>
           <h1>{packet.incident.title}</h1>
           <p className="muted">{packet.incident.description}</p>
         </div>
@@ -135,7 +138,7 @@ export default async function IncidentPage() {
         </div>
       </section>
 
-      <section className="panel">
+      <section className="panel" id="response">
         <span className="sectionLabel">Recommended response</span>
         <div className="actionList">
           {packet.actions.map((action) => (
@@ -150,7 +153,7 @@ export default async function IncidentPage() {
         <ApprovalGate />
       </section>
 
-      <section className="panel">
+      <section className="panel" id="relay">
         <div className="panelTitle">
           <div>
             <span className="sectionLabel">Borderless relay</span>
@@ -166,7 +169,7 @@ export default async function IncidentPage() {
               capacity of the production DB pool, causing acquisition timeouts.
             </p>
           </article>
-          <article className="relayCard">
+          <article className="relayCard" lang="sw">
             <span>Kiswahili</span>
             <strong>Msongamano wa miunganisho ya database</strong>
             <p>
@@ -202,6 +205,6 @@ export default async function IncidentPage() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }
