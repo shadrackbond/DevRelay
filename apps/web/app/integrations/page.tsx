@@ -4,7 +4,7 @@ const integrations = [
   ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Live"],
   ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Live"],
   ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation", "Live"],
-  ["PostgreSQL", "Connection-pool and query-health signals", "Planned"],
+  ["PostgreSQL", "Read-only connection, lock, wait, and long-query telemetry", "Live"],
 ];
 
 export default function IntegrationsPage() {
@@ -28,10 +28,10 @@ export default function IntegrationsPage() {
               <span className={status === "Live" ? "done" : "statusBadge"}>{status}</span>
             </div>
             <p className="muted">{description}</p>
-            {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs") && (
+            {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs" || name === "PostgreSQL") && (
               <div className="integrationDetails">
-                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : "Public repos: no token required"}</span>
-                <span>{name === "Runtime Logs" ? "Optional LOG_SOURCE_TOKEN bearer auth" : "Private repos: GITHUB_TOKEN required"}</span>
+                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : name === "PostgreSQL" ? "Configure DB_TELEMETRY_URL" : "Public repos: no token required"}</span>
+                <span>{name === "Runtime Logs" ? "Optional LOG_SOURCE_TOKEN bearer auth" : name === "PostgreSQL" ? "Optional DB_TELEMETRY_TOKEN bearer auth" : "Private repos: GITHUB_TOKEN required"}</span>
                 <span>Read-only investigation</span>
               </div>
             )}
