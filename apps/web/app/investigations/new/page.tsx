@@ -1,33 +1,34 @@
-import { AppShell } from "../../components/AppShell";
+import Link from "next/link";
 import { NewInvestigationForm } from "../../components/NewInvestigationForm";
+
+export const metadata = { title: "New investigation" };
 
 export default function NewInvestigationPage() {
   return (
-    <AppShell active="Investigations">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">NEW INVESTIGATION</p>
-          <h1>Create an incident investigation</h1>
-          <p className="muted">
-            Capture the incident context first. Evidence collection and diagnosis
-            happen only after providers are connected.
-          </p>
+          <h1>New investigation</h1>
+          <p className="muted">Tell us what you’re seeing. DevRelay will look for the evidence.</p>
         </div>
       </header>
 
-      <section className="panel newInvestigationCard">
-        <NewInvestigationForm />
-      </section>
-
-      <section className="panel demoShortcut">
-        <span className="sectionLabel">Need the full working demo?</span>
-        <h2>Open Incident #1042</h2>
-        <p className="muted">
-          The deterministic checkout scenario already demonstrates evidence
-          correlation, 91% confidence, borderless relay, and human approval.
-        </p>
-        <a className="inlineLink" href="/incidents/1042">Open demo investigation →</a>
-      </section>
-    </AppShell>
+      <div className="intakeLayout">
+        <section className="panel" aria-label="Incident details">
+          <NewInvestigationForm />
+        </section>
+        <aside className="demoShortcut">
+          <h2>Start with what you know.</h2>
+          <p>Include the first symptoms, the affected service, and any recent changes. You can investigate without knowing the cause.</p>
+          <div className="formNotice">
+            <strong>You control the response.</strong>
+            <p>Evidence collection is read-only. Production changes require human approval.</p>
+          </div>
+          <h2 className="demoHeading">Want to see an example?</h2>
+          <p>Follow the checkout incident from its first signals to a recommended response.</p>
+          <Link className="inlineLink" href="/incidents/1042">Open demo investigation</Link>
+        </aside>
+      </div>
+    </>
   );
 }

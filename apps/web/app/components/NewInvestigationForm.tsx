@@ -4,14 +4,16 @@ import { SubmitInvestigationButton } from "./SubmitInvestigationButton";
 export function NewInvestigationForm() {
   return (
     <form action={createInvestigation} className="investigationForm">
+      <p className="formIntro">All fields are required.</p>
       <div className="formGrid">
         <label>
           <span>Incident title</span>
           <input
             name="title"
+            autoComplete="off"
             required
             maxLength={120}
-            placeholder="e.g. Checkout requests timing out"
+            placeholder="e.g. Checkout requests timing out…"
           />
         </label>
 
@@ -19,9 +21,11 @@ export function NewInvestigationForm() {
           <span>Affected service</span>
           <input
             name="service"
+            autoComplete="off"
+            spellCheck={false}
             required
             maxLength={80}
-            placeholder="e.g. checkout-service"
+            placeholder="e.g. checkout-service…"
           />
         </label>
       </div>
@@ -30,12 +34,16 @@ export function NewInvestigationForm() {
         <span>GitHub repository</span>
         <input
           name="repository"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          aria-describedby="repository-hint"
           required
           maxLength={200}
-          placeholder="github.com/owner/repository or owner/repository"
+          placeholder="e.g. owner/repository…"
         />
-        <small className="fieldHint">
-          Set GITHUB_TOKEN for reliable GitHub access. Public repositories can hit anonymous rate limits; private repositories require a token.
+        <small className="fieldHint" id="repository-hint">
+          Enter a GitHub URL or owner/repository. Public access can be rate-limited; ask your administrator to configure authenticated access for reliable or private repository access.
         </small>
       </label>
 
@@ -53,15 +61,16 @@ export function NewInvestigationForm() {
         <span>What are you observing?</span>
         <textarea
           name="description"
+          autoComplete="off"
           required
           maxLength={1200}
           rows={7}
-          placeholder="Describe the symptoms, when they started, affected users, recent changes you know about, and anything already ruled out."
+          placeholder="Describe symptoms, when they started, affected users, and recent changes…"
         />
       </label>
 
       <div className="formNotice">
-        <strong>No evidence will be invented.</strong>
+        <strong>Context first. Evidence next.</strong>
         <p>
           DevRelay creates the incident immediately, then waits for connected
           evidence providers before making a root-cause claim.

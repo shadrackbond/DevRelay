@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AppShell } from "../../components/AppShell";
 import { BorderlessRelay } from "../../components/BorderlessRelay";
 import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
@@ -7,6 +7,8 @@ import { getStoredIncident } from "../../lib/incident-store";
 import { runLogAgent } from "../../lib/log-agent";
 import { runReasoningAgent } from "../../lib/reasoning-agent";
 import { runRepositoryAgent } from "../../lib/repository-agent";
+
+export const metadata = { title: "Incident investigation" };
 
 function severityClass(severity: string) {
   return severity === "critical" ? "critical" : `severityBadge severity-${severity}`;
@@ -105,9 +107,9 @@ export default async function DynamicIncidentPage({
   ];
 
   return (
-    <AppShell active="Incidents">
+    <>
       <div className="incidentTopbar">
-        <a className="backLink" href="/incidents">← Incident queue</a>
+        <Link className="backLink" href="/incidents">← Incident queue</Link>
         <span className={severityClass(incident.severity)}>{incident.severity}</span>
       </div>
 
@@ -300,14 +302,14 @@ export default async function DynamicIncidentPage({
             <h2>Real GitHub evidence</h2>
           </div>
           {repositoryReady && (
-            <a
+            <Link
               className="inlineLink"
               href={`https://github.com/${repositoryResult.repository}`}
               target="_blank"
               rel="noreferrer"
             >
               Open repository ↗
-            </a>
+            </Link>
           )}
         </div>
 
@@ -356,9 +358,9 @@ export default async function DynamicIncidentPage({
                           ? new Date(candidate.occurredAt).toLocaleString()
                           : "Timestamp unavailable"}
                       </span>
-                      <a href={candidate.url} target="_blank" rel="noreferrer">
+                      <Link href={candidate.url} target="_blank" rel="noreferrer">
                         View on GitHub ↗
-                      </a>
+                      </Link>
                     </div>
                   </article>
                 ))}
@@ -711,6 +713,6 @@ export default async function DynamicIncidentPage({
           <strong>{reasoningResult.packet.audit.length}</strong>
         </div>
       </section>
-    </AppShell>
+    </>
   );
 }

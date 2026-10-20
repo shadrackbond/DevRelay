@@ -11,11 +11,11 @@ export function BorderlessRelay({
   const views = renderAllBorderlessRelayViews(packet);
 
   return (
-    <section className="panel">
+    <section className="panel" id="relay" aria-labelledby="relay-title">
       <div className="panelTitle">
         <div>
           <span className="sectionLabel">Borderless Relay</span>
-          <h2>One reasoning state. Multiple representations.</h2>
+          <h2 id="relay-title">One reasoning state. Multiple representations.</h2>
         </div>
         <span className="invariantBadge">
           invariant {views[0]?.packetInvariantId}
@@ -37,7 +37,7 @@ export function BorderlessRelay({
             <div className="relayHeader">
               <div>
                 <span>{view.title}</span>
-                <small>{view.subtitle}</small>
+                <small lang={view.locale}>{view.subtitle}</small>
               </div>
               <b>✓ verified</b>
             </div>
@@ -47,7 +47,7 @@ export function BorderlessRelay({
             {view.compactText ? (
               <pre>{view.compactText}</pre>
             ) : (
-              <p>{view.presentation}</p>
+              <p lang={view.locale}>{view.presentation}</p>
             )}
 
             <div className="relayInvariantGrid">

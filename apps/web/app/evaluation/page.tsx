@@ -1,10 +1,11 @@
-import { AppShell } from "../components/AppShell";
 import { BENCHMARK_CASES } from "../../evaluation/benchmarks";
 import { runEvaluationSuite } from "../../evaluation/harness";
 import {
   assertEvaluationThresholds,
   evaluateThresholds,
 } from "../../evaluation/thresholds";
+
+export const metadata = { title: "Evaluation" };
 
 function pct(value: number): string {
   return `${Math.round(value * 100)}%`;
@@ -20,10 +21,9 @@ export default function EvaluationPage() {
   const metrics = report.metrics;
 
   return (
-    <AppShell active="Evaluation">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">EVALUATION HARNESS</p>
           <h1>DevRelay effectiveness</h1>
           <p className="muted">
             Labeled synthetic incidents evaluated against the production Reasoning
@@ -84,32 +84,28 @@ export default function EvaluationPage() {
           </div>
         </div>
 
-        <div className="benchmarkTable">
-          <div className="benchmarkRow benchmarkHeader">
-            <span>Case</span>
-            <span>Category</span>
-            <span>Expected</span>
-            <span>Predicted</span>
-            <span>Confidence</span>
-            <span>Result</span>
-          </div>
-
-          {report.cases.map((item) => (
-            <div className="benchmarkRow" key={item.id}>
-              <div>
-                <strong>{item.id}</strong>
-                <small>{item.name}</small>
-              </div>
-              <span>{item.category}</span>
-              <code>{item.shouldAbstain ? "ABSTAIN" : item.expectedCandidateId}</code>
-              <code>{item.abstained ? "ABSTAIN" : item.predictedCandidateId}</code>
-              <span>{pct(item.confidence)}</span>
-              <b className={item.correctTop1 ? "gatePass" : "gateFail"}>
-                {item.correctTop1 ? "PASS" : "FAIL"}
-              </b>
-            </div>
-          ))}
-        </div>
+        <table className="benchmarkTable">
+          <thead><tr>
+            <th scope="col">Case</th>
+            <th scope="col">Category</th>
+            <th scope="col">Expected</th>
+            <th scope="col">Predicted</th>
+            <th scope="col">Confidence</th>
+            <th scope="col">Result</th>
+          </tr></thead>
+          <tbody>
+            {report.cases.map((item) => (
+              <tr key={item.id}>
+                <td><strong>{item.id}</strong><small>{item.name}</small></td>
+                <td data-label="Category">{item.category}</td>
+                <td data-label="Expected"><code>{item.shouldAbstain ? "ABSTAIN" : item.expectedCandidateId}</code></td>
+                <td data-label="Predicted"><code>{item.abstained ? "ABSTAIN" : item.predictedCandidateId}</code></td>
+                <td data-label="Confidence">{pct(item.confidence)}</td>
+                <td data-label="Result"><b className={item.correctTop1 ? "gatePass" : "gateFail"}>{item.correctTop1 ? "PASS" : "FAIL"}</b></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       <section className="panel">
@@ -137,6 +133,6 @@ export default function EvaluationPage() {
           </p>
         </div>
       </section>
-    </AppShell>
+    </>
   );
 }

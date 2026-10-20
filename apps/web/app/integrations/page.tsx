@@ -1,18 +1,18 @@
-import { AppShell } from "../components/AppShell";
 
 const integrations = [
-  ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Live"],
-  ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Live"],
-  ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation", "Live"],
-  ["PostgreSQL", "Read-only connection, lock, wait, and long-query telemetry", "Live"],
+  ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Available"],
+  ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Available"],
+  ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation", "Available"],
+  ["PostgreSQL", "Read-only connection, lock, wait, and long-query telemetry", "Available"],
 ];
+
+export const metadata = { title: "Evidence sources" };
 
 export default function IntegrationsPage() {
   return (
-    <AppShell active="Integrations">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">INTEGRATIONS</p>
           <h1>Evidence sources</h1>
           <p className="muted">
             Providers that feed normalized evidence into DevRelay investigations.
@@ -25,7 +25,7 @@ export default function IntegrationsPage() {
           <article className="panel" key={name}>
             <div className="panelTitle">
               <h2>{name}</h2>
-              <span className={status === "Live" ? "done" : "statusBadge"}>{status}</span>
+              <span className={status === "Available" ? "done" : "statusBadge"}>{status}</span>
             </div>
             <p className="muted">{description}</p>
             {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs" || name === "PostgreSQL") && (
@@ -38,6 +38,6 @@ export default function IntegrationsPage() {
           </article>
         ))}
       </div>
-    </AppShell>
+    </>
   );
 }

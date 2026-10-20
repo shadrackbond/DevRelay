@@ -1,14 +1,14 @@
 import { runCheckoutInvestigation } from "@devrelay/core";
-import { AppShell } from "../components/AppShell";
+
+export const metadata = { title: "Decision audit trail" };
 
 export default async function AuditPage() {
   const { packet } = await runCheckoutInvestigation();
 
   return (
-    <AppShell active="Audit Log">
+    <>
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">AUDIT</p>
           <h1>Decision audit trail</h1>
           <p className="muted">Every agent action and policy decision for the demo investigation.</p>
         </div>
@@ -24,6 +24,6 @@ export default async function AuditPage() {
           ))}
         </div>
       </section>
-    </AppShell>
+    </>
   );
 }
