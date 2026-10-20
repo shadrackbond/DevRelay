@@ -8,6 +8,7 @@ export interface StoredIncident {
   title: string;
   description: string;
   service: string;
+  repository?: string;
   severity: IncidentSeverity;
   status: InvestigationStatus;
   createdAt: string;
