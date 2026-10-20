@@ -13,7 +13,8 @@
     "@devrelay/core": "workspace:*",
     "next": "^16.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@devrelay/integrations": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

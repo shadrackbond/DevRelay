@@ -34,6 +34,7 @@ export async function createInvestigation(formData: FormData): Promise<void> {
     title: requiredText(formData, "title", 120),
     description: requiredText(formData, "description", 1200),
     service: requiredText(formData, "service", 80),
+    repository: requiredText(formData, "repository", 200),
     severity,
     status: "awaiting-evidence",
     createdAt: now,

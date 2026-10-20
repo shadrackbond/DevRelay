@@ -27,6 +27,19 @@ export function NewInvestigationForm() {
       </div>
 
       <label>
+        <span>GitHub repository</span>
+        <input
+          name="repository"
+          required
+          maxLength={200}
+          placeholder="github.com/owner/repository or owner/repository"
+        />
+        <small className="fieldHint">
+          Public repositories work without a token. Private repositories require GITHUB_TOKEN.
+        </small>
+      </label>
+
+      <label>
         <span>Severity</span>
         <select name="severity" defaultValue="high">
           <option value="low">Low</option>
