@@ -143,7 +143,7 @@ function rankCommit(
   return {
     id: `commit-${commit.sha}`,
     type: "commit",
-    title: commit.message.split("\n")[0].slice(0, 120),
+    title: (commit.message.split("\n")[0] ?? commit.sha).slice(0, 120),
     url: commit.htmlUrl,
     occurredAt: commit.date,
     score: Math.min(100, lexical.points + temporal.points + service.points),
