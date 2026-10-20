@@ -7,6 +7,7 @@ const nav = [
   { label: "Agents", href: "/agents" },
   { label: "Integrations", href: "/integrations" },
   { label: "Audit Log", href: "/audit" },
+  { label: "Evaluation", href: "/evaluation" },
 ];
 
 export function AppShell({
