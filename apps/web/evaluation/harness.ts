@@ -83,10 +83,10 @@ function ratio(numerator: number, denominator: number): number {
 }
 
 function evidenceMetrics(
-  emitted: Evidence[],
+  citedEvidenceIds: string[],
   relevantIds: string[],
 ): { precision: number; recall: number } {
-  const emittedIds = new Set(emitted.map((item) => item.id));
+  const emittedIds = new Set(citedEvidenceIds);
   const relevant = new Set(relevantIds);
   const truePositives = [...emittedIds].filter((id) => relevant.has(id)).length;
 
@@ -139,7 +139,7 @@ export function evaluateCase(benchmark: BenchmarkCase): BenchmarkCaseResult {
   const rank = rankIndex >= 0 ? rankIndex + 1 : null;
 
   const evidence = evidenceMetrics(
-    reasoning.packet.evidence,
+    reasoning.packet.hypothesis.evidenceIds,
     benchmark.groundTruth.relevantEvidenceIds,
   );
 
@@ -192,8 +192,12 @@ export function runEvaluationSuite(
   const emittedActions = cases.flatMap((item) => item.reasoning.packet.actions);
   const brierScore =
     cases.reduce((sum, item) => {
-      const correct = item.correctTop1 ? 1 : 0;
-      return sum + Math.pow(item.confidence - correct, 2);
+      const target = item.shouldAbstain
+        ? 0
+        : item.predictedCandidateId === item.expectedCandidateId
+          ? 1
+          : 0;
+      return sum + Math.pow(item.confidence - target, 2);
     }, 0) / Math.max(1, cases.length);
 
   return {
