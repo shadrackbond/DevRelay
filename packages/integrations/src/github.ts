@@ -52,6 +52,9 @@ export function parseGitHubRepository(input: string): GitHubRepositoryRef {
 
   if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
     const [owner, repo] = value.split("/");
+    if (!owner || !repo) {
+      throw new Error("Enter a GitHub repository as owner/repo or a github.com URL.");
+    }
     return { owner, repo, fullName: `${owner}/${repo}` };
   }
 
@@ -71,13 +74,17 @@ export function parseGitHubRepository(input: string): GitHubRepositoryRef {
     throw new Error("GitHub repository URL must include owner and repository name.");
   }
 
-  const [owner, repo] = parts;
+  const owner = parts[0];
+  const repo = parts[1];
+  if (!owner || !repo) {
+    throw new Error("GitHub repository URL must include owner and repository name.");
+  }
   return { owner, repo, fullName: `${owner}/${repo}` };
 }
 
 export class GitHubRepositoryProvider {
   constructor(
-    private readonly token = process.env.GITHUB_TOKEN,
+    private readonly token?: string,
     private readonly apiBase = "https://api.github.com",
   ) {}
 
