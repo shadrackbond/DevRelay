@@ -1,5 +1,6 @@
 import { runCheckoutInvestigation } from "@devrelay/core";
 import { ApprovalGate } from "../../components/ApprovalGate";
+import { BorderlessRelay } from "../../components/BorderlessRelay";
 
 const kindLabel: Record<string, string> = {
   repository: "GitHub",
@@ -14,16 +15,6 @@ export default async function IncidentPage() {
   const { packet, stages } = await runCheckoutInvestigation();
   const confidence = Math.round(packet.hypothesis.confidence * 100);
 
-  const lowBandwidth = [
-    "INCIDENT #1042",
-    "CAUSE: DB pool saturation",
-    "TRIGGER: PR #483",
-    "DB: 100/100 active, 56 waiting",
-    "ERRORS: 1,248 timeouts",
-    "CONFIDENCE: " + confidence + "%",
-    "ACTION: reduce workers 80 -> 30",
-    "APPROVAL: REQUIRED",
-  ].join("\n");
 
   return (
     <main className="incidentShell">
@@ -150,45 +141,7 @@ export default async function IncidentPage() {
         <ApprovalGate />
       </section>
 
-      <section className="panel">
-        <div className="panelTitle">
-          <div>
-            <span className="sectionLabel">Borderless relay</span>
-            <h2>Same diagnosis. Different presentation.</h2>
-          </div>
-        </div>
-        <div className="relayGrid">
-          <article className="relayCard">
-            <span>Technical English</span>
-            <strong>Database pool saturation</strong>
-            <p>
-              PR #483 increased checkout worker concurrency beyond the safe
-              capacity of the production DB pool, causing acquisition timeouts.
-            </p>
-          </article>
-          <article className="relayCard">
-            <span>Kiswahili</span>
-            <strong>Msongamano wa miunganisho ya database</strong>
-            <p>
-              PR #483 iliongeza idadi ya workers za checkout kupita uwezo salama
-              wa database, hivyo maombi yakaanza kusubiri na ku-timeout.
-            </p>
-          </article>
-          <article className="relayCard">
-            <span>Plain language</span>
-            <strong>Too many requests need the database at once</strong>
-            <p>
-              A recent change made checkout handle much more work at the same
-              time. The database only has 100 available connections, so requests
-              are queueing and failing.
-            </p>
-          </article>
-          <article className="relayCard lowBandwidth">
-            <span>Low-bandwidth text</span>
-            <pre>{lowBandwidth}</pre>
-          </article>
-        </div>
-      </section>
+      <BorderlessRelay packet={packet} />
 
       <section className="panel">
         <span className="sectionLabel">Audit trail</span>
