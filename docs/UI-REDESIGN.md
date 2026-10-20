@@ -42,7 +42,7 @@ Internal navigation uses Next Link. The shell exposes one main landmark, a skip 
 
 ## Verification
 
-Run `pnpm typecheck` and `pnpm build`. The existing `pnpm lint` command calls `next lint`, which is unsupported by the installed Next.js 16 version; lint migration is outside this UI change.
+Run `pnpm lint`, `pnpm typecheck`, and `pnpm build`. Web linting uses ESLint directly with the Next.js Core Web Vitals and TypeScript flat configs. CI runs linting separately because Next.js 16 builds no longer run it. ESLint 10 requires Node.js `^20.19.0`, `^22.13.0`, or `>=24`; CI uses Node.js 22. Some bundled plugins still declare peer ranges ending at ESLint 9, so installation can report peer warnings even though linting passes with the supported Next.js 16.4 configuration.
 
 Browser checks use agent-browser 0.39.1 against a local running app. No live production approvals are executed. The submission check uses an invalid repository identifier to exercise the existing provider error state without a GitHub request.
 

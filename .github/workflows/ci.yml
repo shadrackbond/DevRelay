@@ -42,6 +42,10 @@ jobs:
         id: install
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        id: lint
+        run: pnpm lint
+
       - name: Typecheck
         id: typecheck
         run: pnpm typecheck
@@ -70,6 +74,7 @@ jobs:
             echo "| Stage | Result |"
             echo "| --- | --- |"
             echo "| Install | \`${{ steps.install.outcome }}\` |"
+            echo "| Lint | \`${{ steps.lint.outcome }}\` |"
             echo "| Typecheck | \`${{ steps.typecheck.outcome }}\` |"
             echo "| Build | \`${{ steps.build.outcome }}\` |"
             echo ""

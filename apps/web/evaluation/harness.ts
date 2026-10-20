@@ -1,7 +1,6 @@
 import {
   renderAllBorderlessRelayViews,
   verifyBorderlessRelayInvariant,
-  type Evidence,
 } from "@devrelay/core";
 import type { CiAgentResult } from "../app/lib/ci-agent";
 import type { DatabaseAgentResult } from "../app/lib/database-agent";
@@ -11,10 +10,7 @@ import type {
   ReasoningAgentResult,
 } from "../app/lib/reasoning-agent";
 import { runReasoningAgent } from "../app/lib/reasoning-agent";
-import type {
-  RepositoryAgentResult,
-  RepositoryCandidate,
-} from "../app/lib/repository-agent";
+import type { RepositoryAgentResult } from "../app/lib/repository-agent";
 
 export interface BenchmarkGroundTruth {
   rootCauseCandidateId: string | null;
