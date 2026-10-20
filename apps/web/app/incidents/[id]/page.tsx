@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
 import { runCiAgent } from "../../lib/ci-agent";
+import { runDatabaseAgent } from "../../lib/database-agent";
 import { getStoredIncident } from "../../lib/incident-store";
 import { runLogAgent } from "../../lib/log-agent";
 import { runRepositoryAgent } from "../../lib/repository-agent";
@@ -34,11 +35,18 @@ export default async function DynamicIncidentPage({
   const repositoryResult = await runRepositoryAgent(incident);
   const ciResult = await runCiAgent(incident, repositoryResult);
   const logResult = await runLogAgent(incident, repositoryResult, ciResult);
+  const databaseResult = await runDatabaseAgent(
+    incident,
+    repositoryResult,
+    ciResult,
+    logResult,
+  );
 
   const repositoryReady = repositoryResult.status === "complete";
   const ciReady = ciResult.status === "complete";
   const logReady = logResult.status === "complete";
-  const completedAgents = [repositoryReady, ciReady, logReady].filter(Boolean).length;
+  const databaseReady = databaseResult.status === "complete";
+  const completedAgents = [repositoryReady, ciReady, logReady, databaseReady].filter(Boolean).length;
 
   const evidencePlan = [
     {
@@ -72,8 +80,18 @@ export default async function DynamicIncidentPage({
     },
     {
       agent: "Database Agent",
-      detail: "Connection pressure, latency, health signals",
-      status: "awaiting",
+      detail:
+        databaseResult.status === "complete"
+          ? `Captured connection, lock, query, and wait telemetry from ${databaseResult.snapshot?.provider ?? "database"}.`
+          : databaseResult.status === "unconfigured"
+            ? "Database telemetry provider is not configured."
+            : "Database telemetry inspection failed.",
+      status:
+        databaseResult.status === "complete"
+          ? "complete"
+          : databaseResult.status === "unconfigured"
+            ? "awaiting"
+            : "error",
     },
   ];
 
@@ -408,14 +426,123 @@ export default async function DynamicIncidentPage({
         )}
       </section>
 
+      <section className="panel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">Database Agent</span>
+            <h2>Database infrastructure telemetry</h2>
+          </div>
+          {databaseResult.status === "complete" && databaseResult.snapshot && (
+            <span className="statusBadge">
+              {databaseResult.snapshot.provider} · {databaseResult.snapshot.database}
+            </span>
+          )}
+        </div>
+
+        {databaseResult.status === "unconfigured" ? (
+          <div className="providerNotice">
+            <strong>Database telemetry is not connected yet</strong>
+            <p>{databaseResult.error}</p>
+            <code>DB_TELEMETRY_URL=https://your-read-only-db-health.example/health</code>
+          </div>
+        ) : databaseResult.status === "error" ? (
+          <div className="providerError">
+            <strong>Database telemetry inspection failed</strong>
+            <p>{databaseResult.error}</p>
+          </div>
+        ) : databaseResult.snapshot ? (
+          <>
+            <p className="muted">{databaseResult.summary}</p>
+
+            <div className="dbMetricGrid">
+              <article>
+                <span>Connections</span>
+                <strong>
+                  {databaseResult.snapshot.connections.active}/
+                  {databaseResult.snapshot.connections.max}
+                </strong>
+                <small>
+                  {databaseResult.snapshot.connections.utilizationPercent}% utilized
+                </small>
+              </article>
+              <article>
+                <span>Waiting</span>
+                <strong>{databaseResult.snapshot.connections.waiting}</strong>
+                <small>sessions waiting</small>
+              </article>
+              <article>
+                <span>Blocked</span>
+                <strong>{databaseResult.snapshot.locks.blockedSessions}</strong>
+                <small>blocked sessions</small>
+              </article>
+              <article>
+                <span>Long queries</span>
+                <strong>{databaseResult.snapshot.queries.longRunning}</strong>
+                <small>
+                  longest {databaseResult.snapshot.queries.longestSeconds}s
+                </small>
+              </article>
+            </div>
+
+            {databaseResult.snapshot.waits.length > 0 && (
+              <div className="waitEventList">
+                {databaseResult.snapshot.waits
+                  .slice()
+                  .sort((a, b) => b.count - a.count)
+                  .slice(0, 6)
+                  .map((wait) => (
+                    <div key={`${wait.type}-${wait.event}`}>
+                      <code>{wait.type}/{wait.event}</code>
+                      <strong>{wait.count}</strong>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {databaseResult.findings.length > 0 && (
+              <div className="ciFindingList">
+                {databaseResult.findings.map((finding) => (
+                  <article className="ciFindingCard" key={finding.candidateId}>
+                    <div className="candidateTopline">
+                      <div>
+                        <span className="sectionLabel">Repository candidate</span>
+                        <strong>{finding.candidateTitle}</strong>
+                      </div>
+                      <div className="signalStack">
+                        <span className={`ciSignal ${signalClass(finding.signal)}`}>
+                          {finding.signal}
+                        </span>
+                        <span className="runtimeScore">
+                          {finding.supportScore}/100 database support
+                        </span>
+                      </div>
+                    </div>
+
+                    <p>{finding.summary}</p>
+
+                    {finding.reasons.length > 0 && (
+                      <ul>
+                        {finding.reasons.map((reason) => (
+                          <li key={reason}>{reason}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </>
+        ) : null}
+      </section>
+
       <section className="panel emptyReasoningState">
         <span className="sectionLabel">Cross-agent reasoning state</span>
         <h2>No final root-cause claim yet</h2>
         <p>
-          DevRelay can now correlate repository changes, CI outcomes, and runtime
-          log behavior. A strong temporal/runtime match materially strengthens a
-          hypothesis, but infrastructure evidence is still required before DevRelay
-          treats the root cause as confirmed.
+          DevRelay can now correlate repository changes, CI outcomes, runtime
+          failures, and database infrastructure pressure. With all four evidence
+          layers available, the system has enough independent signals to promote
+          strongly supported candidates into bounded-confidence root-cause hypotheses.
         </p>
 
         <div className="reasoningEvidenceSummary">
@@ -432,13 +559,17 @@ export default async function DynamicIncidentPage({
             <strong>{logResult.evidence.length}</strong>
           </div>
           <div>
+            <span>Database evidence</span>
+            <strong>{databaseResult.evidence.length}</strong>
+          </div>
+          <div>
             <span>Total normalized evidence</span>
-            <strong>{repositoryResult.evidence.length + ciResult.evidence.length + logResult.evidence.length}</strong>
+            <strong>{repositoryResult.evidence.length + ciResult.evidence.length + logResult.evidence.length + databaseResult.evidence.length}</strong>
           </div>
         </div>
 
         <a className="primaryButton" href="/integrations">
-          Continue with database telemetry →
+          Review evidence integrations →
         </a>
       </section>
     </AppShell>
