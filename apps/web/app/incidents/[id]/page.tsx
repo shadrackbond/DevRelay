@@ -4,6 +4,7 @@ import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
 import { getStoredIncident } from "../../lib/incident-store";
 import { runLogAgent } from "../../lib/log-agent";
+import { runReasoningAgent } from "../../lib/reasoning-agent";
 import { runRepositoryAgent } from "../../lib/repository-agent";
 
 function severityClass(severity: string) {
@@ -41,6 +42,13 @@ export default async function DynamicIncidentPage({
     ciResult,
     logResult,
   );
+  const reasoningResult = runReasoningAgent({
+    incident,
+    repositoryResult,
+    ciResult,
+    logResult,
+    databaseResult,
+  });
 
   const repositoryReady = repositoryResult.status === "complete";
   const ciReady = ciResult.status === "complete";
@@ -111,6 +119,132 @@ export default async function DynamicIncidentPage({
         <div className="stateBadge">
           <strong>{completedAgents}/4 evidence agents complete</strong>
           <span>investigation state</span>
+        </div>
+      </section>
+
+      <section className="panel reasoningPanel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">Reasoning Agent</span>
+            <h2>
+              {reasoningResult.status === "complete"
+                ? "Leading root-cause hypothesis"
+                : "Evidence is not sufficient yet"}
+            </h2>
+          </div>
+          <span className={`reasoningStatus ${reasoningResult.status === "complete" ? "done" : "waiting"}`}>
+            {Math.round(reasoningResult.packet.hypothesis.confidence * 100)}% confidence
+          </span>
+        </div>
+
+        <p className="reasoningStatement">
+          {reasoningResult.packet.hypothesis.statement}
+        </p>
+        <p className="muted">{reasoningResult.summary}</p>
+
+        <div className="reasoningMetaGrid">
+          <div>
+            <span>Confidence ceiling</span>
+            <strong>{Math.round(reasoningResult.packet.confidenceCeiling * 100)}%</strong>
+          </div>
+          <div>
+            <span>Evidence sources</span>
+            <strong>{reasoningResult.availableSources.length}/4</strong>
+          </div>
+          <div>
+            <span>Supporting evidence</span>
+            <strong>{reasoningResult.packet.hypothesis.evidenceIds.length}</strong>
+          </div>
+          <div>
+            <span>Candidate count</span>
+            <strong>{reasoningResult.candidates.length}</strong>
+          </div>
+        </div>
+
+        {reasoningResult.candidates.length > 0 && (
+          <div className="hypothesisList">
+            {reasoningResult.candidates.slice(0, 4).map((candidate, index) => (
+              <article className="hypothesisCard" key={candidate.candidateId}>
+                <div className="candidateTopline">
+                  <div>
+                    <span className="sectionLabel">
+                      {index === 0 ? "Leading candidate" : `Candidate ${index + 1}`}
+                    </span>
+                    <strong>{candidate.title}</strong>
+                  </div>
+                  <span className={`candidateScore ${scoreClass(Math.round(candidate.confidence * 100))}`}>
+                    {Math.round(candidate.confidence * 100)}%
+                  </span>
+                </div>
+
+                <div className="agentSignalRow">
+                  <span>Repo {candidate.repositoryScore}/100</span>
+                  <span>CI {candidate.ciSignal}</span>
+                  <span>Logs {candidate.logSignal}</span>
+                  <span>DB {candidate.databaseSignal}</span>
+                </div>
+
+                {candidate.supportingReasons.length > 0 && (
+                  <ul>
+                    {candidate.supportingReasons.slice(0, 5).map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {candidate.contradictions.length > 0 && (
+                  <div className="reasoningContradictions">
+                    <strong>Contradictions</strong>
+                    {candidate.contradictions.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
+                  </div>
+                )}
+
+                <a className="inlineLink" href={candidate.url} target="_blank" rel="noreferrer">
+                  Inspect candidate ↗
+                </a>
+              </article>
+            ))}
+          </div>
+        )}
+
+        {(reasoningResult.packet.hypothesis.contradictions.length > 0 ||
+          reasoningResult.packet.hypothesis.missingEvidence.length > 0) && (
+          <div className="twoColumn">
+            <div className="callout warn">
+              <span className="sectionLabel">Contradictions</span>
+              {reasoningResult.packet.hypothesis.contradictions.length > 0 ? (
+                reasoningResult.packet.hypothesis.contradictions.map((item) => (
+                  <p key={item}>{item}</p>
+                ))
+              ) : (
+                <p>No material contradictions detected.</p>
+              )}
+            </div>
+            <div className="callout">
+              <span className="sectionLabel">Missing evidence</span>
+              {reasoningResult.packet.hypothesis.missingEvidence.length > 0 ? (
+                reasoningResult.packet.hypothesis.missingEvidence.map((item) => (
+                  <p key={item}>{item}</p>
+                ))
+              ) : (
+                <p>No critical evidence gaps remain.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="reasoningActions">
+          <span className="sectionLabel">Recommended actions</span>
+          {reasoningResult.packet.actions.map((action) => (
+            <article key={action.id}>
+              <div>
+                <strong>{action.description}</strong>
+                <p>Risk: {action.risk} · Approval: {action.approval}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -535,14 +669,13 @@ export default async function DynamicIncidentPage({
         ) : null}
       </section>
 
-      <section className="panel emptyReasoningState">
-        <span className="sectionLabel">Cross-agent reasoning state</span>
-        <h2>No final root-cause claim yet</h2>
-        <p>
-          DevRelay can now correlate repository changes, CI outcomes, runtime
-          failures, and database infrastructure pressure. With all four evidence
-          layers available, the system has enough independent signals to promote
-          strongly supported candidates into bounded-confidence root-cause hypotheses.
+      <section className="panel">
+        <span className="sectionLabel">Canonical Reasoning Packet</span>
+        <h2>Auditable synthesis output</h2>
+        <p className="muted">
+          This packet is the source of truth for downstream language, low-bandwidth,
+          and approval views. Presentation layers may simplify wording but cannot
+          change the evidence IDs, confidence ceiling, contradictions, or safety gates.
         </p>
 
         <div className="reasoningEvidenceSummary">
@@ -568,9 +701,12 @@ export default async function DynamicIncidentPage({
           </div>
         </div>
 
-        <a className="primaryButton" href="/integrations">
-          Review evidence integrations →
-        </a>
+        <div className="packetAudit">
+          <span>Packet generated</span>
+          <code>{reasoningResult.packet.generatedAt}</code>
+          <span>Audit events</span>
+          <strong>{reasoningResult.packet.audit.length}</strong>
+        </div>
       </section>
     </AppShell>
   );
