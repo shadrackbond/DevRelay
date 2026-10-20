@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "../../components/AppShell";
 import { runCiAgent } from "../../lib/ci-agent";
 import { getStoredIncident } from "../../lib/incident-store";
+import { runLogAgent } from "../../lib/log-agent";
 import { runRepositoryAgent } from "../../lib/repository-agent";
 
 function severityClass(severity: string) {
@@ -32,10 +33,12 @@ export default async function DynamicIncidentPage({
 
   const repositoryResult = await runRepositoryAgent(incident);
   const ciResult = await runCiAgent(incident, repositoryResult);
+  const logResult = await runLogAgent(incident, repositoryResult, ciResult);
 
   const repositoryReady = repositoryResult.status === "complete";
   const ciReady = ciResult.status === "complete";
-  const completedAgents = [repositoryReady, ciReady].filter(Boolean).length;
+  const logReady = logResult.status === "complete";
+  const completedAgents = [repositoryReady, ciReady, logReady].filter(Boolean).length;
 
   const evidencePlan = [
     {
@@ -54,8 +57,18 @@ export default async function DynamicIncidentPage({
     },
     {
       agent: "Log Agent",
-      detail: "Runtime errors and correlated request failures",
-      status: "awaiting",
+      detail:
+        logResult.status === "complete"
+          ? `Inspected ${logResult.entriesInspected} runtime log entries and correlated signatures to repository candidates.`
+          : logResult.status === "unconfigured"
+            ? "Runtime log provider is not configured."
+            : "Runtime log inspection failed.",
+      status:
+        logResult.status === "complete"
+          ? "complete"
+          : logResult.status === "unconfigured"
+            ? "awaiting"
+            : "error",
     },
     {
       agent: "Database Agent",
@@ -314,14 +327,95 @@ export default async function DynamicIncidentPage({
         )}
       </section>
 
+      <section className="panel">
+        <div className="panelTitle">
+          <div>
+            <span className="sectionLabel">Log Agent</span>
+            <h2>Runtime log correlation</h2>
+          </div>
+          {logResult.status === "complete" && (
+            <span className="statusBadge">{logResult.entriesInspected} log entries inspected</span>
+          )}
+        </div>
+
+        {logResult.status === "unconfigured" ? (
+          <div className="providerNotice">
+            <strong>Runtime logs are not connected yet</strong>
+            <p>{logResult.error}</p>
+            <code>LOG_SOURCE_URL=https://your-read-only-log-adapter.example/query</code>
+          </div>
+        ) : logResult.status === "error" ? (
+          <div className="providerError">
+            <strong>Runtime log inspection failed</strong>
+            <p>{logResult.error}</p>
+          </div>
+        ) : (
+          <>
+            <p className="muted">{logResult.summary}</p>
+
+            {logResult.signatures.length > 0 && (
+              <div className="signatureGrid">
+                {logResult.signatures.slice(0, 6).map((signature) => (
+                  <article className="signatureCard" key={signature.signature}>
+                    <div className="candidateTopline">
+                      <span className="statusBadge">{signature.level}</span>
+                      <strong>{signature.count}×</strong>
+                    </div>
+                    <p>{signature.sample}</p>
+                    <div className="signatureTimes">
+                      <span>First: {new Date(signature.firstSeen).toLocaleString()}</span>
+                      <span>Last: {new Date(signature.lastSeen).toLocaleString()}</span>
+                    </div>
+                    {signature.traceIds.length > 0 && (
+                      <code>{signature.traceIds[0]}</code>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {logResult.findings.length > 0 && (
+              <div className="ciFindingList">
+                {logResult.findings.map((finding) => (
+                  <article className="ciFindingCard" key={finding.candidateId}>
+                    <div className="candidateTopline">
+                      <div>
+                        <span className="sectionLabel">Repository candidate</span>
+                        <strong>{finding.candidateTitle}</strong>
+                      </div>
+                      <div className="signalStack">
+                        <span className={`ciSignal ${signalClass(finding.signal)}`}>
+                          {finding.signal}
+                        </span>
+                        <span className="runtimeScore">{finding.supportScore}/100 runtime support</span>
+                      </div>
+                    </div>
+
+                    <p>{finding.summary}</p>
+
+                    {finding.reasons.length > 0 && (
+                      <ul>
+                        {finding.reasons.map((reason) => (
+                          <li key={reason}>{reason}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
       <section className="panel emptyReasoningState">
         <span className="sectionLabel">Cross-agent reasoning state</span>
         <h2>No final root-cause claim yet</h2>
         <p>
-          DevRelay can now correlate repository changes with CI outcomes, but a green
-          or red pipeline still does not establish production causality. Runtime or
-          infrastructure evidence is required before a candidate is promoted into a
-          root-cause hypothesis.
+          DevRelay can now correlate repository changes, CI outcomes, and runtime
+          log behavior. A strong temporal/runtime match materially strengthens a
+          hypothesis, but infrastructure evidence is still required before DevRelay
+          treats the root cause as confirmed.
         </p>
 
         <div className="reasoningEvidenceSummary">
@@ -334,13 +428,17 @@ export default async function DynamicIncidentPage({
             <strong>{ciResult.evidence.length}</strong>
           </div>
           <div>
+            <span>Runtime log evidence</span>
+            <strong>{logResult.evidence.length}</strong>
+          </div>
+          <div>
             <span>Total normalized evidence</span>
-            <strong>{repositoryResult.evidence.length + ciResult.evidence.length}</strong>
+            <strong>{repositoryResult.evidence.length + ciResult.evidence.length + logResult.evidence.length}</strong>
           </div>
         </div>
 
         <a className="primaryButton" href="/integrations">
-          Continue with runtime logs →
+          Continue with database telemetry →
         </a>
       </section>
     </AppShell>
