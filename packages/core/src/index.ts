@@ -3,3 +3,4 @@ export * from "./agents/base";
 export * from "./canonical-reasoning";
 export * from "./orchestrator";
 export * from "./demo/checkout-investigation";
+export * from "./borderless-relay";

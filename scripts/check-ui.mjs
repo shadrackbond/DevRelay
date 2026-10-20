@@ -21,7 +21,7 @@ const routes = [
   ["/", "/"], ["/incidents", "/incidents"],
   ["/investigations", "/investigations"], ["/investigations/new", "/investigations"],
   ["/agents", "/agents"], ["/integrations", "/integrations"],
-  ["/audit", "/audit"], ["/incidents/1042", "/incidents"],
+  ["/audit", "/audit"], ["/evaluation", "/evaluation"], ["/incidents/1042", "/incidents"],
 ];
 
 try {

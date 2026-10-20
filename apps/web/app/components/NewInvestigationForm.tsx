@@ -43,7 +43,7 @@ export function NewInvestigationForm() {
           placeholder="e.g. owner/repository…"
         />
         <small className="fieldHint" id="repository-hint">
-          Enter a GitHub URL or owner/repository. Public repositories work immediately; private access must be configured by your administrator.
+          Enter a GitHub URL or owner/repository. Public access can be rate-limited; ask your administrator to configure authenticated access for reliable or private repository access.
         </small>
       </label>
 

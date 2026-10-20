@@ -10,6 +10,7 @@ const items = [
   { label: "Agents", href: "/agents", path: "M8 8h8v8H8zM12 2v6m0 8v6M2 12h6m8 0h6M5 5l3 3m8 8 3 3M19 5l-3 3M8 16l-3 3" },
   { label: "Integrations", href: "/integrations", path: "M8 2v5m8-5v5M6 7h12v3a6 6 0 0 1-12 0V7zm6 9v6" },
   { label: "Audit log", href: "/audit", path: "M6 3h12v18H6zM9 7h6M9 11h6M9 15h4" },
+  { label: "Evaluation", href: "/evaluation", path: "M4 3v18h17M8 16v-4m5 4V7m5 9v-6" },
 ];
 
 export function Navigation() {

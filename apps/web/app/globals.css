@@ -316,3 +316,92 @@ svg { flex-shrink: 0; }
   .sidebar nav a[aria-current="page"] { outline: 2px solid LinkText; }
   .critical, .severityBadge, .statusBadge, .done, .fresh, .waiting, .errorState { border: 1px solid currentColor; }
 }
+
+/* Evidence adapters and evaluation share the workspace surfaces and status colors. */
+.ciFindingList, .workflowRunList, .hypothesisList, .reasoningActions { display: grid; gap: 16px; margin-top: 20px; }
+.ciFindingCard, .workflowRun, .signatureCard, .hypothesisCard, .reasoningActions article { min-width: 0; padding: 18px; background: var(--canvas); border: 1px solid var(--line); border-radius: 8px; }
+.ciFindingCard > p, .ciFindingCard ul, .hypothesisCard ul { color: var(--muted); font-size: 14px; line-height: 1.6; }
+.ciFindingCard > p { margin: 16px 0 0; }
+.ciFindingCard ul, .hypothesisCard ul { padding-left: 20px; }
+.ciSignal, .reasoningStatus, .invariantBadge, .evaluationPass { display: inline-flex; align-items: center; width: fit-content; max-width: 100%; padding: 5px 9px; border-radius: 5px; font-size: 12px; line-height: 1.5; font-weight: 600; }
+.signalSupports { background: var(--red-soft); color: var(--red); }
+.signalContradicts, .invariantBadge, .evaluationPass { background: var(--green-soft); color: var(--green); }
+.signalNeutral { background: var(--amber-soft); color: var(--amber); }
+.workflowRun { background: var(--surface); }
+.workflowRunHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.workflowRunHeader > div { display: grid; gap: 4px; min-width: 0; }
+.workflowRunHeader span, .signatureTimes, .runtimeScore { color: var(--muted); font-size: 12px; }
+.workflowRunHeader a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
+.ciMetaGrid, .signatureGrid, .evaluationNotes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.ciMetaGrid > div, .reasoningEvidenceSummary > div, .dbMetricGrid article, .reasoningMetaGrid > div, .evaluationMetricGrid article { min-width: 0; border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--canvas); }
+.ciMetaGrid span, .reasoningEvidenceSummary span, .dbMetricGrid span, .reasoningMetaGrid span, .evaluationMetricGrid span { display: block; font-size: 12px; color: var(--muted); }
+.ciMetaGrid strong { display: block; font-size: 13px; margin-top: 6px; }
+.failureBox, .reasoningContradictions { display: grid; gap: 6px; margin-top: 16px; padding: 12px 16px; border-left: 3px solid var(--red); background: var(--red-soft); color: var(--red); font-size: 13px; }
+.reasoningContradictions { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
+.reasoningEvidenceSummary, .dbMetricGrid, .reasoningMetaGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.reasoningEvidenceSummary strong, .dbMetricGrid strong, .reasoningMetaGrid strong, .evaluationMetricGrid strong { display: block; margin-top: 8px; font-size: 26px; font-variant-numeric: tabular-nums; }
+.reasoningEvidenceSummary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.dbMetricGrid small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.providerNotice { border: 1px solid #eed6ac; background: var(--amber-soft); color: var(--amber); border-radius: 8px; padding: 20px; }
+.providerNotice p { margin: 8px 0; }
+.providerNotice code { display: block; margin-top: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.signatureCard p { font-size: 14px; color: var(--muted); margin-top: 16px; }
+.signatureTimes { display: grid; gap: 4px; margin: 12px 0; }
+.signalStack { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.waitEventList { display: grid; margin: 16px 0; }
+.waitEventList > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.reasoningPanel { border-color: #cbd9f4; }
+.reasoningStatement { font-size: 19px; line-height: 1.6; margin-top: 20px; }
+.agentSignalRow, .relayWarnings { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.agentSignalRow span { background: var(--blue-soft); color: var(--blue-hover); padding: 5px 9px; border-radius: 5px; font-size: 12px; }
+.reasoningActions p { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.packetAudit { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 16px; align-items: baseline; margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; font-size: 12px; color: var(--muted); }
+.relayHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.relayHeader > div { min-width: 0; display: grid; gap: 6px; }
+.relayHeader span { color: var(--blue-hover); font-size: 12px; }
+.relayHeader small { color: var(--muted); font-size: 12px; }
+.relayHeader b { color: var(--green); font-size: 12px; flex-shrink: 0; }
+.relayInvariantGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+.relayInvariantGrid > div { padding: 12px; border-radius: 6px; background: var(--surface); }
+.relayInvariantGrid span { color: var(--muted); font-size: 12px; }
+.relayInvariantGrid strong { font-size: 13px; margin-top: 4px; }
+.relayWarnings span { padding: 5px 8px; background: var(--amber-soft); color: var(--amber); font-size: 12px; border-radius: 5px; }
+.lowBandwidth { --surface: #20364f; --muted: #bdd0e7; --line: #416080; --blue-hover: #b5d2ff; --green: #98e3bd; --amber: #ffe0a3; --amber-soft: #443820; }
+.evaluationMetricGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.evaluationMetricGrid article { background: var(--surface); }
+.evaluationMetricGrid strong { font-size: 23px; }
+.qualityGateList { display: grid; margin-top: 16px; }
+.qualityGateList > div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.qualityGateList > div > div { display: grid; gap: 4px; }
+.qualityGateList span { color: var(--muted); font-size: 12px; }
+.gatePass { color: var(--green); }
+.gateFail { color: var(--red); }
+.benchmarkTable { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; font-size: 13px; }
+.benchmarkTable th { color: var(--muted); font-size: 12px; font-weight: 500; }
+.benchmarkTable td, .benchmarkTable th { padding: 16px 8px; border-bottom: 1px solid var(--line); }
+.benchmarkTable td:first-child { width: 30%; }
+.benchmarkTable small { display: block; color: var(--muted); font-size: 12px; margin-top: 6px; }
+.evaluationNotes p { margin: 0; padding: 18px; background: var(--canvas); border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--muted); }
+.evaluationNotes strong { color: var(--ink); }
+@media (max-width: 1200px) {
+  .evaluationMetricGrid, .reasoningEvidenceSummary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+  .benchmarkTable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .benchmarkTable, .benchmarkTable tbody, .benchmarkTable tr, .benchmarkTable td { display: block; }
+  .benchmarkTable tr { padding: 16px 0; border-top: 1px solid var(--line); }
+  .benchmarkTable td, .benchmarkTable td:first-child { width: auto; border: 0; padding: 6px 0; }
+  .benchmarkTable td[data-label]::before { content: attr(data-label) ": "; color: var(--muted); margin-right: 8px; }
+}
+@media (max-width: 900px) {
+  .reasoningMetaGrid, .dbMetricGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .ciMetaGrid, .signatureGrid, .evaluationNotes { grid-template-columns: 1fr; }
+  .workflowRunHeader, .relayHeader { flex-direction: column; }
+  .packetAudit { grid-template-columns: 1fr; }
+  .signalStack { align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .evaluationMetricGrid, .reasoningEvidenceSummary, .reasoningMetaGrid, .dbMetricGrid, .relayInvariantGrid { grid-template-columns: 1fr; }
+}

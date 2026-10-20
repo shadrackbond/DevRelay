@@ -14,7 +14,7 @@ Loaded and read these skills in the requested order with `npx skills use <reposi
 
 Supporting paths were resolved from the directories printed by the skill loader. The UI/UX search used `incident response dashboard --design-system` and `server components layout fonts --stack nextjs`. Its operations guidance fits; its dark theme and marketing sections were adapted to an incident workspace rather than copied verbatim.
 
-The audit covered every App Router page, the root layout, four original components, global styles, the server action, the incident store, and repository-agent error handling. The changes reach all page wrappers and internal links. Backend contracts, fixtures, package exports, dependencies, and production approval behavior stay as they were.
+The audit covered every App Router page, the root layout, four original components, global styles, the server action, the incident store, and repository-agent error handling. The redesign reaches all page wrappers and internal links without adding dependencies or changing backend contracts. The merge from main preserves its CI, log, database, reasoning, relay, and evaluation implementations while adapting their presentation to the shared shell.
 
 ## Design direction
 
@@ -45,3 +45,16 @@ Internal navigation uses Next Link. The shell exposes one main landmark, a skip 
 Run `pnpm typecheck` and `pnpm build`. The existing `pnpm lint` command calls `next lint`, which is unsupported by the installed Next.js 16 version; lint migration is outside this UI change.
 
 Browser checks use agent-browser 0.39.1 against a local running app. No live production approvals are executed. The submission check uses an invalid repository identifier to exercise the existing provider error state without a GitHub request.
+
+### Merge verification
+
+Merged main at `37f1e51` into the redesign branch. All six conflicted files were resolved, preserving the incoming provider and reasoning behavior. Evaluation is available in the shared navigation, benchmark results use a responsive semantic table, and the reusable relay retains the dashboard’s deep link and language annotations.
+
+- `pnpm typecheck`: passed.
+- `pnpm build`: passed, including the evaluation harness’s quality gates.
+- Browser smoke test: all nine pages passed at 320, 375, 768, 1024, and 1440 CSS pixels.
+- Embedded axe audits: zero violations on every page at 375 and 1440 pixels. This is an automated check, not a complete accessibility certification.
+- Keyboard skip/navigation, approval/rejection/reset, native form validation, creation and cookie persistence, dashboard count refresh, reduced motion, and missing-incident recovery: passed.
+- Desktop dashboard and mobile Evaluation/incident screenshots: reviewed.
+
+With agent-browser available on PATH, run `node scripts/check-ui.mjs http://localhost:3007` against a local production server. The verification server disabled external log and database sources. Live authenticated provider success paths were not tested.

@@ -40,11 +40,37 @@ docs/
 ```bash
 corepack enable
 pnpm install
-cp .env.example .env.local
+cp .env.example apps/web/.env.local
 pnpm dev
 ```
 
 Open http://localhost:3000.
+
+Next.js loads environment files from `apps/web`, so put local credentials in
+`apps/web/.env.local`, not the repository root. Restart the web server after
+changing these values. For hosted deployments, set them in the web service's
+server environment.
+
+### Connecting the investigation agents
+
+- **Repository and CI:** set `GITHUB_TOKEN`. Both agents use this token.
+  Anonymous requests can hit GitHub's shared IP rate limit, including for public
+  repositories. The token must have read access to the repository and its Actions
+  data.
+- **Runtime logs:** set `LOG_SOURCE_URL` to a real read-only JSON log endpoint.
+  The agent sends `service`, `from`, `to`, and `limit` query parameters and accepts
+  an array of entries or an object with an `entries` or `logs` array. Each entry
+  needs a `timestamp` and `message`; `level`, `service`, and `traceId` are optional.
+  Set `LOG_SOURCE_TOKEN` if the endpoint requires bearer authentication.
+- **Database:** set `DB_TELEMETRY_URL` to a real read-only JSON database telemetry
+  endpoint, with `DB_TELEMETRY_TOKEN` for optional bearer authentication. The agent
+  sends `service` and `incidentAt` query parameters. The response shape is defined
+  by `DatabaseTelemetrySnapshot` in
+  [database-telemetry.ts](packages/integrations/src/database-telemetry.ts).
+  `DATABASE_URL` does not connect this agent.
+
+The example endpoint URLs displayed in the UI are placeholders. Without actual
+log and database adapters, those agents report that they are not connected.
 
 ## Foundation status
 
