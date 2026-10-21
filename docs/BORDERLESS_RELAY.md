@@ -38,7 +38,7 @@ evidence with its reference ID, source, observation time in UTC, freshness, and
 support/context/contradiction role. Simulated evidence is labeled explicitly.
 HTTP sources can be opened; demo-only protocol references are displayed as text.
 An expandable audit trail links collection and reasoning events to the same
-evidence cards and displays temporary server-recorded approval decisions. Empty investigations explain why no evidence has been accepted.
+evidence cards and displays saved server-recorded approval decisions. Empty investigations explain why no evidence has been accepted.
 
 Candidate and Relay evidence references jump to the corresponding provenance
 card. Provider failures and insufficient-evidence states remain visible rather
@@ -100,7 +100,8 @@ A future model-assisted translator may rewrite the diagnosis text for fluency, b
 
 ## Verification
 
-`pnpm check:demo` verifies complete compact exports, all four Relay invariants,
+`pnpm check:history` verifies stored decision and Relay consistency across saved
+runs. `pnpm check:demo` verifies complete compact exports, all four Relay invariants,
 action-description fingerprint changes, empty exports, and rejection of tampered
 compact text. `pnpm check:reasoning` verifies Relay invariants across the eight
 labeled reasoning benchmarks. Both checks run in CI.

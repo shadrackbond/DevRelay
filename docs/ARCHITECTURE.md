@@ -74,8 +74,11 @@ Read-only investigations can execute automatically. Mutations—opening a PR, ch
 
 The current [approval gate](APPROVAL_GATE.md) validates proposal-specific demo
 decisions on the server and keeps their audit and Relay state aligned. It has no
-authenticated reviewer identity or production action executor; durable history
-and production authorization remain separate work.
+authenticated reviewer identity or production action executor.
+[Investigation and audit history](INVESTIGATION_HISTORY.md) is stored in SQLite,
+scoped to browser workspaces. Saved runs retain provider results and decisions;
+explicit reinvestigation creates a new proposal without overwriting earlier runs.
+Production authorization remains separate work.
 
 ## Hackathon MVP
 
