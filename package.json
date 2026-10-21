@@ -2,6 +2,7 @@
   "name": "devrelay",
   "version": "0.1.0",
   "private": true,
+  "engines": { "node": "^22.13.0 || >=24.0.0" },
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "pnpm --filter @devrelay/web dev",
@@ -11,6 +12,7 @@
     "check:simulated": "node scripts/check-simulated-providers.mjs",
     "check:reasoning": "node scripts/check-reasoning-agent.mjs",
     "check:approval": "node scripts/check-approval-gate.mjs",
+    "check:history": "node scripts/check-history.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint"
   }

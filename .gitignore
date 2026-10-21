@@ -8,3 +8,8 @@ coverage
 .env.local
 *.log
 .DS_Store
+
+.data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

@@ -56,7 +56,8 @@ try {
   open("/incidents/1042");
   browser("find", "role", "button", "click", "--name", "Approve action");
   browser("wait", "--text", "Action approved");
-  open("/incidents/1042");
+  browser("find", "role", "button", "click", "--name", "Run investigation again");
+  browser("wait", "--text", "Approve action");
   browser("find", "role", "button", "click", "--name", "Reject action", "--exact");
   browser("wait", "--text", "Action rejected");
   console.log("PASS: keyboard navigation and both approval outcomes");

@@ -1,4 +1,7 @@
+import "server-only";
 import { cookies } from "next/headers";
+import { insertIncident, readIncident, readIncidents } from "./history-store";
+import { isWorkspaceId, WORKSPACE_COOKIE } from "./workspace";
 
 export type IncidentSeverity = "low" | "medium" | "high" | "critical";
 export type InvestigationStatus = "awaiting-evidence" | "investigating" | "ready";
@@ -15,45 +18,43 @@ export interface StoredIncident {
   updatedAt: string;
 }
 
-const COOKIE_NAME = "devrelay_incidents_v1";
-const MAX_INCIDENTS = 10;
-
-function decode(value?: string): StoredIncident[] {
+export function decodeLegacyIncidents(value?: string): StoredIncident[] {
   if (!value) return [];
-
   try {
-    const parsed = JSON.parse(decodeURIComponent(value));
+    const parsed: unknown = JSON.parse(decodeURIComponent(value));
     if (!Array.isArray(parsed)) return [];
-    return parsed as StoredIncident[];
+    return parsed.slice(0, 10).flatMap((item: unknown) => {
+      if (!item || typeof item !== "object") return [];
+      const raw = item as Record<string, unknown>;
+      const text = (key: string, limit: number) => typeof raw[key] === "string" && raw[key].trim().length > 0 && raw[key].length <= limit;
+      if (!text("id", 84) || !/^INC-[A-Z0-9-]+$/.test(String(raw.id)) || !text("title", 120) || !text("description", 1200) || !text("service", 80) ||
+        (raw.repository !== undefined && !text("repository", 200)) || !["low", "medium", "high", "critical"].includes(String(raw.severity)) ||
+        !text("createdAt", 40) || !text("updatedAt", 40) || !Number.isFinite(Date.parse(String(raw.createdAt))) || !Number.isFinite(Date.parse(String(raw.updatedAt)))) return [];
+      return [{ id: String(raw.id), title: String(raw.title), description: String(raw.description), service: String(raw.service),
+        repository: raw.repository === undefined ? undefined : String(raw.repository), severity: raw.severity as IncidentSeverity,
+        status: "awaiting-evidence" as const, createdAt: String(raw.createdAt), updatedAt: String(raw.updatedAt) }];
+    });
   } catch {
     return [];
   }
 }
 
-function encode(items: StoredIncident[]): string {
-  return encodeURIComponent(JSON.stringify(items.slice(0, MAX_INCIDENTS)));
+export async function getWorkspaceId(): Promise<string> {
+  const store = await cookies();
+  const id = store.get(WORKSPACE_COOKIE)?.value;
+  if (!isWorkspaceId(id)) throw new Error("Workspace is unavailable. Enable cookies and reload the page.");
+  for (const incident of decodeLegacyIncidents(store.get("devrelay_incidents_v1")?.value)) insertIncident(id, incident);
+  return id;
 }
 
 export async function listStoredIncidents(): Promise<StoredIncident[]> {
-  const store = await cookies();
-  return decode(store.get(COOKIE_NAME)?.value);
+  return readIncidents(await getWorkspaceId());
 }
 
 export async function getStoredIncident(id: string): Promise<StoredIncident | undefined> {
-  const incidents = await listStoredIncidents();
-  return incidents.find((incident) => incident.id === id);
+  return readIncident(await getWorkspaceId(), id);
 }
 
 export async function saveStoredIncident(incident: StoredIncident): Promise<void> {
-  const store = await cookies();
-  const current = decode(store.get(COOKIE_NAME)?.value);
-  const next = [incident, ...current.filter((item) => item.id !== incident.id)];
-
-  store.set(COOKIE_NAME, encode(next), {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  insertIncident(await getWorkspaceId(), incident);
 }

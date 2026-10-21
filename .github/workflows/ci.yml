@@ -74,6 +74,10 @@ jobs:
         id: approval
         run: pnpm check:approval
 
+      - name: Verify persisted investigation history
+        id: history
+        run: pnpm check:history
+
       - name: Capture failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -100,6 +104,7 @@ jobs:
             echo "| Checkout demo | \`${{ steps.demo.outcome }}\` |"
             echo "| GitHub adapter | \`${{ steps.github.outcome }}\` |"
             echo "| Simulated providers | \`${{ steps.simulated.outcome }}\` |"
+            echo "| Persisted history | \`${{ steps.history.outcome }}\` |"
             echo "| Human approval gate | \`${{ steps.approval.outcome }}\` |"
             echo "| Reasoning agent | \`${{ steps.reasoning.outcome }}\` |"
             echo ""

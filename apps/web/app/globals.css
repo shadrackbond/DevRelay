@@ -440,3 +440,14 @@ svg { flex-shrink: 0; }
 @media (max-width: 480px) {
   .evaluationMetricGrid, .reasoningEvidenceSummary, .reasoningMetaGrid, .dbMetricGrid, .relayInvariantGrid { grid-template-columns: 1fr; }
 }
+
+.historyList { display: grid; gap: 8px; padding-left: 20px; }
+.historyList a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
+.historyList a[aria-current] { font-weight: 700; }
+.auditList > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); }
+.auditList time { color: var(--muted); font-size: 12px; }
+.auditList p { margin: 6px 0 0; }
+@media (max-width: 700px) {
+  .auditList > div { grid-template-columns: minmax(0, 1fr); }
+  .auditList span { grid-column: 1; }
+}

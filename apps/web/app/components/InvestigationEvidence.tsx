@@ -53,6 +53,8 @@ export function InvestigationEvidence({ packet }: { packet: CanonicalReasoningPa
               <span>{entry.action.replaceAll("-", " ")}</span>
               {typeof entry.metadata?.actionId === "string" && <span>Action: {entry.metadata.actionId}</span>}
               {typeof entry.metadata?.description === "string" && <span>{entry.metadata.description}</span>}
+              {typeof entry.metadata?.summary === "string" && <span>{entry.metadata.summary}</span>}
+              {typeof entry.metadata?.error === "string" && <span>{entry.metadata.error}</span>}
               <div className="evidenceLinks">{entry.evidenceIds?.map((id) => <a key={id} href={`#evidence-${id}`}>{id}</a>)}</div>
             </li>
           ))}
