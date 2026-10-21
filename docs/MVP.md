@@ -29,7 +29,7 @@ DevRelay should:
 - [ ] Translation/simplification does not change the root cause.
 - [ ] Proposed mutations are gated by approval.
 - [ ] An audit trail explains what each agent did.
-- [ ] Demo can run deterministically with seeded data.
+- [x] Demo can run deterministically with seeded data (`pnpm check:demo`).
 
 ## Stretch scope
 

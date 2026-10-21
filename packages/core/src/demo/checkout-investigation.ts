@@ -107,21 +107,22 @@ function synthesize(evidence: Evidence[]): { hypothesis: RootCauseHypothesis; ac
 }
 
 export async function runCheckoutInvestigation(): Promise<CheckoutInvestigationResult> {
+  const incident = { ...checkoutIncident };
   const agents: DevRelayAgent[] = [new RepositoryAgent(), new CiAgent(), new LogAgent(), new DatabaseAgent()];
   const orchestrator = new IncidentOrchestrator(agents);
-  const result = await orchestrator.investigate(checkoutIncident);
+  const result = await orchestrator.investigate(incident);
   const { hypothesis, actions } = synthesize(result.evidence);
 
-  const packet = buildReasoningPacket({ incident: checkoutIncident, evidence: result.evidence, hypothesis, actions });
+  const packet = buildReasoningPacket({ incident, evidence: result.evidence, hypothesis, actions });
   packet.generatedAt = NOW;
   packet.audit = [
     { actor: "coordinator-agent", action: "investigation-started", timestamp: "2026-10-19T20:38:00.000Z" },
     { actor: "repository-agent", action: "evidence-collected", timestamp: "2026-10-19T20:39:10.000Z", evidenceIds: ["ev-pr-483"] },
     { actor: "ci-agent", action: "evidence-collected", timestamp: "2026-10-19T20:39:42.000Z", evidenceIds: ["ev-ci-1142"] },
-    { actor: "log-agent", action: "evidence-collected", timestamp: "2026-10-19T20:40:03.000Z", evidenceIds: ["ev-log-timeouts"] },
-    { actor: "database-agent", action: "evidence-collected", timestamp: "2026-10-19T20:40:18.000Z", evidenceIds: ["ev-db-pool"] },
-    { actor: "reasoning-agent", action: "root-cause-synthesized", timestamp: "2026-10-19T20:40:33.000Z", evidenceIds: hypothesis.evidenceIds, metadata: { confidence: hypothesis.confidence } },
-    { actor: "policy-gate", action: "mutation-awaiting-human-approval", timestamp: "2026-10-19T20:40:36.000Z", metadata: { actionId: "action-reduce-workers" } },
+    { actor: "log-agent", action: "evidence-collected", timestamp: "2026-10-19T20:44:25.000Z", evidenceIds: ["ev-log-timeouts"] },
+    { actor: "database-agent", action: "evidence-collected", timestamp: "2026-10-19T20:44:45.000Z", evidenceIds: ["ev-db-pool"] },
+    { actor: "reasoning-agent", action: "root-cause-synthesized", timestamp: "2026-10-19T20:44:50.000Z", evidenceIds: hypothesis.evidenceIds, metadata: { confidence: hypothesis.confidence } },
+    { actor: "policy-gate", action: "mutation-awaiting-human-approval", timestamp: "2026-10-19T20:44:55.000Z", metadata: { actionId: "action-reduce-workers" } },
   ];
 
   return {
