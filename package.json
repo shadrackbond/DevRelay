@@ -7,6 +7,7 @@
     "dev": "pnpm --filter @devrelay/web dev",
     "build": "pnpm -r build",
     "check:demo": "pnpm --filter @devrelay/core check:demo",
+    "check:github": "node scripts/check-github-adapter.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint"
   }
