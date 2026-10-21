@@ -4,3 +4,4 @@ export * from "./canonical-reasoning";
 export * from "./orchestrator";
 export * from "./demo/checkout-investigation";
 export * from "./borderless-relay";
+export * from "./approval-gate";

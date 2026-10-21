@@ -1,3 +1,4 @@
+import { requiresHumanApproval } from "./approval-gate";
 import type {
   ApprovalState,
   CanonicalReasoningPacket,
@@ -45,7 +46,7 @@ export interface RelayInvariantResult {
 }
 
 function safetyGate(packet: CanonicalReasoningPacket): RelaySafetyGate {
-  return packet.actions.some((action) => action.approval === "required")
+  return packet.actions.some(requiresHumanApproval)
     ? "human-approval-required"
     : "no-human-approval-required";
 }
@@ -89,12 +90,11 @@ function percent(value: number): number {
 }
 
 function actionSummary(packet: CanonicalReasoningPacket): string {
-  const required = packet.actions.filter(
-    (action) => action.approval === "required",
-  ).length;
+  const required = packet.actions.filter(requiresHumanApproval);
 
-  if (required > 0) {
-    return `${required} recommended action(s) require human approval.`;
+  if (required.length > 0) {
+    return `${required.length} recommended action(s) require human approval. ` +
+      required.map((action) => `${action.id}: ${action.approval}.`).join(" ");
   }
 
   if (packet.actions.length > 0) {
@@ -124,9 +124,7 @@ function renderKiswahili(packet: CanonicalReasoningPacket): Pick<
   "title" | "subtitle" | "presentation"
 > {
   const missing = packet.hypothesis.missingEvidence.length;
-  const approvalRequired = packet.actions.some(
-    (action) => action.approval === "required",
-  );
+  const approvalRequired = packet.actions.some(requiresHumanApproval);
 
   return {
     title: "Kiswahili",
@@ -140,7 +138,7 @@ function renderKiswahili(packet: CanonicalReasoningPacket): Pick<
         : "Hakuna pengo muhimu la ushahidi lililoripotiwa. ") +
       (approvalRequired
         ? "Hatua yenye athari kubwa inahitaji idhini ya binadamu."
-        : "Hakuna hatua inayohitaji idhini ya binadamu kwa sasa."),
+        : "Hakuna hatua inayohitaji idhini ya binadamu kwa sasa.") + ` ${actionSummary(packet)}`,
   };
 }
 
@@ -150,9 +148,7 @@ function renderPlain(packet: CanonicalReasoningPacket): Pick<
 > {
   const confidence = percent(packet.hypothesis.confidence);
   const missing = packet.hypothesis.missingEvidence.length;
-  const approvalRequired = packet.actions.some(
-    (action) => action.approval === "required",
-  );
+  const approvalRequired = packet.actions.some(requiresHumanApproval);
 
   return {
     title: "Plain language",
@@ -165,7 +161,7 @@ function renderPlain(packet: CanonicalReasoningPacket): Pick<
         : "The main evidence sources currently agree. ") +
       (approvalRequired
         ? "Any risky production change must still be approved by a person."
-        : "No risky production change is currently waiting for approval."),
+        : "No risky production change is currently waiting for approval.") + ` ${actionSummary(packet)}`,
   };
 }
 

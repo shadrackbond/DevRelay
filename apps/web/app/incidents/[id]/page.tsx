@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SIMULATED_CHECKOUT_SOURCE } from "@devrelay/integrations";
-import { BorderlessRelay } from "../../components/BorderlessRelay";
-import { InvestigationEvidence } from "../../components/InvestigationEvidence";
+import { InvestigationReview } from "../../components/InvestigationReview";
 import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
 import { getStoredIncident } from "../../lib/incident-store";
@@ -255,18 +254,6 @@ export default async function DynamicIncidentPage({
             </div>
           </div>
         )}
-
-        <div className="reasoningActions" id="response">
-          <span className="sectionLabel">Recommended actions</span>
-          {reasoningResult.packet.actions.map((action) => (
-            <article key={action.id}>
-              <div>
-                <strong>{action.description}</strong>
-                <p>Risk: {action.risk} · Approval: {action.approval}</p>
-              </div>
-            </article>
-          ))}
-        </div>
       </section>
 
       <div className="investigationGrid">
@@ -690,8 +677,7 @@ export default async function DynamicIncidentPage({
         ) : null}
       </section>
 
-      <InvestigationEvidence packet={reasoningResult.packet} />
-      <BorderlessRelay packet={reasoningResult.packet} />
+      <InvestigationReview packet={reasoningResult.packet} />
     </>
   );
 }

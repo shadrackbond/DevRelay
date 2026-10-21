@@ -51,6 +51,8 @@ export function InvestigationEvidence({ packet }: { packet: CanonicalReasoningPa
               <time dateTime={entry.timestamp}>{timestamp(entry.timestamp)}</time>
               <strong>{entry.actor}</strong>
               <span>{entry.action.replaceAll("-", " ")}</span>
+              {typeof entry.metadata?.actionId === "string" && <span>Action: {entry.metadata.actionId}</span>}
+              {typeof entry.metadata?.description === "string" && <span>{entry.metadata.description}</span>}
               <div className="evidenceLinks">{entry.evidenceIds?.map((id) => <a key={id} href={`#evidence-${id}`}>{id}</a>)}</div>
             </li>
           ))}
