@@ -18,6 +18,7 @@ export function ApprovalGate({ initialPacket, runId, readOnly }: { initialPacket
 
   return (
     <>
+      <InvestigationEvidence packet={state.packet} />
       <section className="panel" id="response" aria-labelledby="response-title">
         <span className="sectionLabel">Human approval gate</span>
         <h2 id="response-title">Review the recommended response</h2>
@@ -49,7 +50,6 @@ export function ApprovalGate({ initialPacket, runId, readOnly }: { initialPacket
           {pending ? "Recording decision…" : state.message}
         </p>
       </section>
-      <InvestigationEvidence packet={state.packet} />
       <BorderlessRelay packet={state.packet} />
     </>
   );
