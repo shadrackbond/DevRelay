@@ -118,7 +118,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 1. **Complete:** Seed the deterministic checkout-failure demo. [Run and verify it](docs/DEMO.md).
 2. **Complete:** Implement GitHub evidence adapter. [Configure and verify it](docs/REPOSITORY_AGENT.md).
 3. **Complete:** Add simulated log and database providers. See the simulation setup above.
-4. Add synthesis/reasoning agent.
+4. **Complete:** Add synthesis/reasoning agent. [Rules and verification](docs/REASONING_AGENT.md).
 5. Build Incident Investigation and Borderless Relay screens.
 6. Add human-approval action gate.
 7. Persist investigation/audit history.

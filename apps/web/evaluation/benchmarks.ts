@@ -271,16 +271,16 @@ function benchmark(input: {
   const logs = logResult(input.logs, input.logsAvailable ?? true);
   const db = databaseResult(input.db, input.dbAvailable ?? true);
 
-  const relevantEvidenceIds = input.root
+  const relevantEvidenceIds = input.root && !input.shouldAbstain
     ? [
         `github-${input.root.id}`,
-        ...(input.ci.some((row) => row.candidate.id === input.root?.id)
+        ...(input.ci.some((row) => row.candidate.id === input.root?.id && row.signal === "supports")
           ? [`ci-${input.root.id}`]
           : []),
-        ...(input.logs.some((row) => row.candidate.id === input.root?.id)
+        ...(input.logs.some((row) => row.candidate.id === input.root?.id && row.signal === "supports")
           ? [`logs-${input.root.id}`]
           : []),
-        ...(input.db.some((row) => row.candidate.id === input.root?.id)
+        ...(input.db.some((row) => row.candidate.id === input.root?.id && row.signal === "supports")
           ? [`database-${input.root.id}`]
           : []),
       ]
@@ -301,7 +301,7 @@ function benchmark(input: {
     logResult: logs,
     databaseResult: db,
     groundTruth: {
-      rootCauseCandidateId: input.root?.id ?? null,
+      rootCauseCandidateId: input.shouldAbstain ? null : input.root?.id ?? null,
       shouldAbstain: input.shouldAbstain ?? false,
       relevantEvidenceIds,
       requiresHumanApproval: input.requiresApproval ?? false,
@@ -466,6 +466,6 @@ export const BENCHMARK_CASES: BenchmarkCase[] = [
     db: [],
     logsAvailable: false,
     dbAvailable: false,
-    shouldAbstain: false,
+    shouldAbstain: true,
   }),
 ];
