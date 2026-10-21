@@ -2,6 +2,31 @@
 
 The Log Agent gives DevRelay its first real production-runtime evidence source.
 
+## Simulated checkout provider
+
+Set `LOG_SOURCE_URL=simulated://checkout` in `apps/web/.env.local` and restart
+the server to explicitly select `SimulatedRuntimeLogProvider`. It uses the same
+`query({ service, from, to, limit })` contract as the HTTP provider, makes no
+network requests, and requires no token. Other configured URLs keep using HTTP;
+an unset URL remains unconfigured. HTTP failures do not select simulated data.
+
+The simulation supports **checkout-service** only. It produces 1,248
+`DB_CONNECTION_ACQUIRE_TIMEOUT` entries across ten minutes, with unique stable
+trace IDs. Timestamps are anchored to incident intake, and collection is fixed
+at intake plus eight minutes. For incident #1042's intake time, this matches the
+seed's log window ending at 2026-10-19 20:44:20 UTC. Query time boundaries are
+inclusive, entries are chronological, and the result limit is capped at 2,000.
+Invalid time ranges, limits, timestamps, or services produce errors.
+
+The agent requests the full seeded burst, clusters it, and scores it against the
+repository candidates using its existing logic. Simulation does not manufacture
+repository candidates. It labels the source `simulated://checkout`, prefixes the
+summary with “Simulated checkout evidence,” and sets `metadata.simulated` on its
+evidence. The investigation screen also shows a simulation notice. Freshness
+describes the replayed scenario, not current production health.
+
+Use `pnpm check:simulated` for deterministic provider and agent checks.
+
 ## Provider contract
 
 Set:
