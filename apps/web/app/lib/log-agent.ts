@@ -2,6 +2,8 @@ import type { Evidence } from "@devrelay/core";
 import {
   HttpRuntimeLogProvider,
   RuntimeLogProviderError,
+  SIMULATED_CHECKOUT_SOURCE,
+  SimulatedRuntimeLogProvider,
   type RuntimeLogEntry,
 } from "@devrelay/integrations";
 import type { CiAgentResult } from "./ci-agent";
@@ -253,6 +255,7 @@ function findingToEvidence(
     observedAt: strongest?.firstSeen ?? fetchedAt,
     freshness: "fresh",
     metadata: {
+      simulated: source === SIMULATED_CHECKOUT_SOURCE,
       signal: finding.signal,
       supportScore: finding.supportScore,
       reasons: finding.reasons,
@@ -281,21 +284,20 @@ export async function runLogAgent(
     };
   }
 
-  const provider = new HttpRuntimeLogProvider(
-    sourceUrl,
-    process.env.LOG_SOURCE_TOKEN,
-  );
-
-  const incidentTime = new Date(incident.createdAt).getTime();
-  const from = new Date(incidentTime - 6 * 60 * 60 * 1000).toISOString();
-  const to = new Date(incidentTime + 6 * 60 * 60 * 1000).toISOString();
+  const simulated = sourceUrl === SIMULATED_CHECKOUT_SOURCE;
+  const provider = simulated
+    ? new SimulatedRuntimeLogProvider(incident.createdAt)
+    : new HttpRuntimeLogProvider(sourceUrl, process.env.LOG_SOURCE_TOKEN);
 
   try {
+    const incidentTime = new Date(incident.createdAt).getTime();
+    const from = new Date(incidentTime - 6 * 60 * 60 * 1000).toISOString();
+    const to = new Date(incidentTime + 6 * 60 * 60 * 1000).toISOString();
     const snapshot = await provider.query({
       service: incident.service,
       from,
       to,
-      limit: 1000,
+      limit: simulated ? 2000 : 1000,
     });
 
     const serviceEntries = snapshot.entries.filter((entry) => {
@@ -321,6 +323,7 @@ export async function runLogAgent(
       status: "complete",
       source: snapshot.source,
       summary:
+        (simulated ? "Simulated checkout evidence. " : "") +
         `Inspected ${serviceEntries.length} runtime log entries and clustered them into ${signatures.length} signature(s). ` +
         `${supporting} candidate(s) supported, ${contradicting} contradicted, ${findings.length - supporting - contradicting} neutral.`,
       entriesInspected: serviceEntries.length,

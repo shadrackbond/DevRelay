@@ -8,6 +8,7 @@
     "build": "pnpm -r build",
     "check:demo": "pnpm --filter @devrelay/core check:demo",
     "check:github": "node scripts/check-github-adapter.mjs",
+    "check:simulated": "node scripts/check-simulated-providers.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint"
   }

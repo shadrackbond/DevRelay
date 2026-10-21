@@ -70,7 +70,30 @@ server environment.
   `DATABASE_URL` does not connect this agent.
 
 The example endpoint URLs displayed in the UI are placeholders. Without actual
-log and database adapters, those agents report that they are not connected.
+log and database adapters or an explicitly selected simulation, those agents
+report that they are not connected.
+
+### Simulated checkout providers
+
+To run new checkout investigations without live log or database endpoints, set
+these values in `apps/web/.env.local` and restart the web server:
+
+```env
+LOG_SOURCE_URL=simulated://checkout
+DB_TELEMETRY_URL=simulated://checkout
+```
+
+Create an investigation for **checkout-service** and attach a GitHub repository.
+The providers replay 1,248 connection-acquisition timeouts and a saturated
+100-connection pool with 56 waiting requests, anchored to the incident timestamp.
+Both sources are labeled simulated in the investigation. Repository and CI
+evidence still use GitHub; the fixed demo at `/incidents/1042` remains entirely
+offline. Leaving a URL unset keeps that agent unconfigured, and HTTP failures
+never fall back to simulation.
+
+Run `pnpm check:simulated` to verify the providers and their agent integration
+without network access. See [Log Agent](docs/LOG_AGENT.md) and
+[Database Agent](docs/DATABASE_AGENT.md) for provider details.
 
 ## Foundation status
 
@@ -94,7 +117,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 
 1. **Complete:** Seed the deterministic checkout-failure demo. [Run and verify it](docs/DEMO.md).
 2. **Complete:** Implement GitHub evidence adapter. [Configure and verify it](docs/REPOSITORY_AGENT.md).
-3. Add simulated log and database providers.
+3. **Complete:** Add simulated log and database providers. See the simulation setup above.
 4. Add synthesis/reasoning agent.
 5. Build Incident Investigation and Borderless Relay screens.
 6. Add human-approval action gate.

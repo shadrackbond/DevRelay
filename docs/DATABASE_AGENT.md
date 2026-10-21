@@ -2,6 +2,30 @@
 
 The Database Agent supplies infrastructure evidence without giving DevRelay write access or direct production database credentials.
 
+## Simulated checkout provider
+
+Set `DB_TELEMETRY_URL=simulated://checkout` in `apps/web/.env.local` and restart
+the server to explicitly select `SimulatedDatabaseTelemetryProvider`. It uses
+the same `inspect({ service, incidentAt })` contract as the HTTP provider and
+requires no network, database, or token. Other configured URLs keep using HTTP;
+an unset URL remains unconfigured. HTTP failures do not fall back to simulation.
+
+The simulation supports **checkout-service** only. It returns 100/100 active
+connections, zero idle connections, 56 waiting requests, and a pool-acquisition
+wait event. Query and lock counters are zero, keeping the scenario focused on
+connection-pool saturation. Capture time is fixed at incident intake plus seven
+minutes forty seconds, matching incident #1042's 20:44:40 UTC fixture when given
+its original intake time. Invalid incident timestamps and other services fail.
+
+The existing Database Agent scores this snapshot against repository candidates.
+It labels the source `simulated://checkout`, prefixes the summary with “Simulated
+checkout evidence,” and sets `metadata.simulated` on its evidence. The provider
+and database names are `simulated-postgresql` and `checkout-demo`, and the
+investigation screen shows a simulation notice. Replayed freshness and confidence
+are not a measurement of current production health.
+
+Use `pnpm check:simulated` for deterministic provider and agent checks.
+
 ## Configuration
 
 ```env
