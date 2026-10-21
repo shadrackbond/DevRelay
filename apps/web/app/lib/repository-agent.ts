@@ -73,15 +73,18 @@ function overlapScore(incidentTokens: Set<string>, text: string): {
 function temporalScore(occurredAt: string | null, incidentAt: string): {
   points: number;
   reason?: string;
+  contextOnly?: boolean;
 } {
-  if (!occurredAt) return { points: 0 };
+  if (!occurredAt || !Number.isFinite(Date.parse(occurredAt))) {
+    return { points: 0, contextOnly: true, reason: "Change timestamp is unavailable; retained as context only." };
+  }
 
   const incidentTime = new Date(incidentAt).getTime();
   const changeTime = new Date(occurredAt).getTime();
   const deltaHours = (incidentTime - changeTime) / 3_600_000;
 
-  if (deltaHours < -0.25) {
-    return { points: 0, reason: "Occurred after incident intake; retained as context, not causal evidence." };
+  if (deltaHours < 0) {
+    return { points: 0, contextOnly: true, reason: "Occurred after incident intake; retained as context, not causal evidence." };
   }
 
   if (deltaHours <= 6) {
@@ -148,7 +151,7 @@ function rankCommit(
     url: commit.htmlUrl,
     sha: commit.sha,
     occurredAt: commit.date,
-    score: Math.min(100, lexical.points + temporal.points + service.points),
+    score: Math.min(temporal.contextOnly ? 19 : 100, lexical.points + temporal.points + service.points),
     reasons,
     files: [],
   };
@@ -184,7 +187,7 @@ function rankPullRequest(
     occurredAt: pull.mergedAt ?? pull.updatedAt,
     score: Math.min(
       100,
-      pull.mergedAt
+      pull.mergedAt && !temporal.contextOnly
         ? lexical.points + temporal.points + service.points
         : Math.min(19, lexical.points + temporal.points + service.points),
     ),
@@ -203,12 +206,16 @@ function candidateToEvidence(
     source: `github:${repository}`,
     kind: "repository",
     summary: `${candidate.title} — correlation score ${candidate.score}/100. ${candidate.reasons.join(" ")}`,
-    observedAt: candidate.occurredAt ?? fetchedAt,
+    observedAt: fetchedAt,
     freshness: "fresh",
     uri: candidate.url,
     metadata: {
       correlationScore: candidate.score,
       candidateType: candidate.type,
+      repository,
+      sha: candidate.sha,
+      occurredAt: candidate.occurredAt,
+      fetchedAt,
       reasons: candidate.reasons,
       files: candidate.files,
     },
@@ -231,11 +238,10 @@ export async function runRepositoryAgent(
   }
 
   const provider = new GitHubRepositoryProvider(process.env.GITHUB_TOKEN);
-  const since = new Date(
-    new Date(incident.createdAt).getTime() - 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
-
   try {
+    const since = new Date(
+      new Date(incident.createdAt).getTime() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
     const snapshot = await provider.inspect(incident.repository, {
       since,
       maxCommits: 12,
@@ -280,12 +286,18 @@ export async function runRepositoryAgent(
       fetchedAt: snapshot.fetchedAt,
     };
   } catch (error) {
-    const message =
-      error instanceof GitHubApiError
-        ? `${error.message}${error.status === 403 ? " Add GITHUB_TOKEN for higher rate limits or private repositories." : ""}`
-        : error instanceof Error
-          ? error.message
-          : "Unknown GitHub provider error.";
+    let message = error instanceof Error ? error.message : "Unknown GitHub provider error.";
+    if (error instanceof GitHubApiError) {
+      if (error.status === 403 || error.status === 429) {
+        message += " GitHub access was denied or rate-limited; check GITHUB_TOKEN permissions and retry after the rate limit resets.";
+      } else if (error.status === 401) {
+        message += " Check GITHUB_TOKEN; GitHub rejected the credentials.";
+      } else if (error.status === 404) {
+        message += " Check the repository name and GITHUB_TOKEN access to private repositories.";
+      }
+    } else if (error instanceof Error && error.name === "TimeoutError") {
+      message = "GitHub request timed out after 10 seconds. Retry the investigation.";
+    }
 
     return {
       status: "error",

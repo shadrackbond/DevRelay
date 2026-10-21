@@ -50,36 +50,22 @@ export class GitHubApiError extends Error {
 }
 
 export function parseGitHubRepository(input: string): GitHubRepositoryRef {
-  const value = input.trim().replace(/\.git$/, "");
-
-  if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(value)) {
-    const [owner, repo] = value.split("/");
-    if (!owner || !repo) {
-      throw new Error("Enter a GitHub repository as owner/repo or a github.com URL.");
+  let value = input.trim();
+  if (value.includes(":")) {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !["github.com", "www.github.com"].includes(url.hostname) ||
+        url.port || url.username || url.password || url.search || url.hash) {
+      throw new Error("Repository URL must be an HTTPS github.com repository URL.");
     }
-    return { owner, repo, fullName: `${owner}/${repo}` };
+    value = url.pathname.slice(1);
   }
 
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
-    throw new Error("Enter a GitHub repository as owner/repo or a github.com URL.");
-  }
-
-  if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
-    throw new Error("Repository URL must point to github.com.");
-  }
-
-  const parts = url.pathname.split("/").filter(Boolean);
-  if (parts.length < 2) {
-    throw new Error("GitHub repository URL must include owner and repository name.");
-  }
-
-  const owner = parts[0];
-  const repo = parts[1];
-  if (!owner || !repo) {
-    throw new Error("GitHub repository URL must include owner and repository name.");
+  value = value.replace(/\/$/, "").replace(/\.git$/, "");
+  const match = /^([A-Za-z0-9-]+)\/([A-Za-z0-9_.-]+)$/.exec(value);
+  const owner = match?.[1];
+  const repo = match?.[2];
+  if (!owner || !repo || repo === "." || repo === "..") {
+    throw new Error("Enter a GitHub repository as owner/repo or an HTTPS github.com repository URL.");
   }
   return { owner, repo, fullName: `${owner}/${repo}` };
 }
@@ -99,6 +85,7 @@ export class GitHubRepositoryProvider {
         ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!response.ok) {
@@ -106,7 +93,7 @@ export class GitHubRepositoryProvider {
       let detail = "";
       try {
         const payload = (await response.json()) as { message?: string };
-        detail = payload.message ? `: ${payload.message}` : "";
+        detail = typeof payload.message === "string" ? `: ${payload.message}` : "";
       } catch {
         // Ignore malformed GitHub error bodies.
       }
@@ -126,6 +113,14 @@ export class GitHubRepositoryProvider {
     options?: { since?: string; maxCommits?: number; maxPullRequests?: number },
   ): Promise<GitHubRepositorySnapshot> {
     const ref = parseGitHubRepository(repositoryInput);
+    for (const value of [options?.maxCommits, options?.maxPullRequests]) {
+      if (value !== undefined && (!Number.isInteger(value) || value < 1)) {
+        throw new Error("GitHub result limits must be positive integers.");
+      }
+    }
+    if (options?.since && !Number.isFinite(Date.parse(options.since))) {
+      throw new Error("GitHub since must be a valid timestamp.");
+    }
     const maxCommits = Math.min(options?.maxCommits ?? 12, 30);
     const maxPullRequests = Math.min(options?.maxPullRequests ?? 8, 20);
 
@@ -149,6 +144,7 @@ export class GitHubRepositoryProvider {
         commit: {
           message: string;
           author: { name: string; date: string } | null;
+          committer: { date: string } | null;
         };
         author: { login: string } | null;
       }>
@@ -172,14 +168,15 @@ export class GitHubRepositoryProvider {
 
     const enrichedPulls = await Promise.all(
       pulls.slice(0, maxPullRequests).map(async (pull) => {
-        try {
-          const files = await this.request<Array<{ filename: string }>>(
-            `/repos/${ref.owner}/${ref.repo}/pulls/${pull.number}/files?per_page=100`,
+        const files: string[] = [];
+        for (let page = 1; page <= 30; page += 1) {
+          const batch = await this.request<Array<{ filename: string }>>(
+            `/repos/${ref.owner}/${ref.repo}/pulls/${pull.number}/files?per_page=100&page=${page}`,
           );
-          return { pull, files: files.map((file) => file.filename) };
-        } catch {
-          return { pull, files: [] as string[] };
+          files.push(...batch.map((file) => file.filename));
+          if (batch.length < 100) return { pull, files };
         }
+        throw new Error(`PR #${pull.number} reached GitHub's 3,000-file limit; changed-file evidence may be incomplete.`);
       }),
     );
 
@@ -195,7 +192,7 @@ export class GitHubRepositoryProvider {
         sha: item.sha,
         message: item.commit.message,
         author: item.author?.login ?? item.commit.author?.name ?? null,
-        date: item.commit.author?.date ?? null,
+        date: item.commit.committer?.date ?? item.commit.author?.date ?? null,
         htmlUrl: item.html_url,
       })),
       pullRequests: enrichedPulls.map(({ pull, files }) => ({
