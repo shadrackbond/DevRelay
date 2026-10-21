@@ -455,3 +455,106 @@ svg { flex-shrink: 0; }
 .incidentSummaryGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.incidentSummaryGrid article{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:16px}.incidentSummaryGrid span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.incidentSummaryGrid strong{display:block;margin-top:6px;font-size:24px}.incidentTableDetailed th,.incidentTableDetailed td{vertical-align:top}.incidentTableDetailed td:first-child{min-width:220px}.incidentTableDetailed td:first-child code{display:block;margin-bottom:5px}.incidentTableDetailed td:first-child strong{display:block}.incidentRepository{display:inline-block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.incidentConfidence{display:grid;gap:2px}.incidentConfidence small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}.relayFormatBadge{font-size:10px;text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line);border-radius:999px;padding:4px 7px;color:var(--muted)}.relayExportPreview{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}.relayExportPreview summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--blue-hover)}.relayExportPreview pre{margin:12px 0 0;padding:12px;background:var(--surface-subtle);border:1px solid var(--line);border-radius:7px;max-height:280px;overflow:auto;font-size:11px;white-space:pre-wrap;word-break:break-word}.relayActions button{white-space:normal}@media(max-width:1100px){.incidentSummaryGrid{grid-template-columns:repeat(2,1fr)}.incidentTableDetailed{min-width:980px}.panel:has(.incidentTableDetailed){overflow-x:auto}}@media(max-width:650px){.incidentSummaryGrid{grid-template-columns:1fr}.incidentTableDetailed{min-width:0}.panel:has(.incidentTableDetailed){overflow:visible}}
 
 .providerActions{margin-top:10px}.providerActions .inlineLink{display:inline-flex}
+
+/* Incident command surface: high-level causal workspace above detailed evidence. */
+.incidentCommandSurface{margin:24px 0;display:grid;gap:14px}
+.incidentCommandHeader{display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+.incidentCommandHeader h2{margin:5px 0 0;font-size:20px}
+.incidentConfidence{display:inline-flex;align-items:center;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:700;white-space:nowrap}
+.incidentConfidence.verified{background:var(--green-soft);color:var(--green)}
+.incidentConfidence.partial{background:var(--amber-soft);color:var(--amber)}
+.incidentCommandGrid{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(420px,1.75fr) minmax(240px,.9fr);gap:14px;align-items:stretch}
+.incidentSourcePanel,.incidentGraphPanel,.reasoningTrailPanel,.recommendedActionPanel{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:18px;min-width:0}
+.incidentGraphColumn{display:grid;gap:14px;min-width:0}
+.commandPanelHeading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--line)}
+.commandPanelHeading h3{margin:0;font-size:15px}
+.commandPanelHeading span,.commandPanelHeading a{font-size:11px;color:var(--muted);margin-top:3px}
+.sourceStack{display:grid;margin-top:8px}
+.sourceRow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.sourceRow:last-child{border-bottom:0}
+.sourceIcon{display:grid;place-items:center;width:31px;height:31px;border:1px solid var(--line);background:var(--canvas);border-radius:7px;font-size:10px;font-weight:800;color:var(--blue-hover)}
+.sourceRow>div{display:grid;gap:3px;min-width:0}
+.sourceRow strong{font-size:12px}
+.sourceRow small{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sourceState{display:inline-flex;width:fit-content;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.sourceState.verified,.agentPermissionBlock .verified{background:var(--green-soft);color:var(--green)}
+.sourceState.missing,.agentPermissionBlock .missing{background:var(--amber-soft);color:var(--amber)}
+.sourceState.error{background:var(--red-soft);color:var(--red)}
+.agentPermissionBlock{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:9px;font-size:11px}
+.agentPermissionBlock>div{display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+.agentPermissionBlock b{font-size:10px;border-radius:999px;padding:3px 6px}
+.causalGraph{position:relative;height:350px;margin-top:12px;background:var(--canvas);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.causalGraphLines{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.causalGraphLines path{fill:none;stroke:#9eb3c8;stroke-width:1.3;stroke-dasharray:5 5}
+.graphNode,.graphHypothesis,.graphRootCause{position:absolute;z-index:1;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:3px;box-shadow:0 3px 12px rgba(23,48,74,.05)}
+.graphNode{width:31%}
+.graphNode small,.graphHypothesis small{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.graphNode strong,.graphHypothesis strong{font-size:11px;line-height:1.35}
+.graphNode span,.graphHypothesis span,.graphRootCause span{font-size:9px;color:var(--muted)}
+.graphRepo{left:4%;top:8%}.graphRuntime{right:4%;top:8%}.graphCi{left:4%;bottom:13%}.graphDb{right:4%;bottom:13%}
+.graphHypothesis{left:34%;top:36%;width:32%;border-color:#9bb7ef;background:#f7faff;text-align:center}
+.graphHypothesis.promoted{border-color:#94d5b5;background:var(--green-soft)}
+.graphHypothesis.abstained{border-color:#ead39d;background:var(--amber-soft)}
+.graphRootCause{left:35%;bottom:4%;width:30%;text-align:center}
+.graphRootCause.promoted{border-color:#94d5b5;background:var(--green-soft);color:var(--green)}
+.graphRootCause.abstained{border-color:#ead39d;background:var(--amber-soft);color:var(--amber)}
+.graphRootCause strong{font-size:9px;letter-spacing:.05em}
+.reasoningTrailSteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:12px}
+.reasoningTrailSteps>div{padding:10px 12px;border-right:1px solid var(--line);display:grid;gap:4px;min-width:0}
+.reasoningTrailSteps>div:last-child{border-right:0}
+.reasoningTrailSteps span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-hover)}
+.reasoningTrailSteps strong{font-size:10px;line-height:1.4;font-weight:600}
+.recommendedActionPanel{display:flex;flex-direction:column}
+.recommendedActionLead{font-size:16px;line-height:1.45;font-weight:650;margin:18px 0}
+.recommendedActionList{display:grid;gap:8px;font-size:11px;padding:14px;background:var(--canvas);border-radius:8px}
+.recommendedActionList ol{margin:0;padding-left:18px;color:var(--muted);display:grid;gap:8px}
+.approvalWhy{display:grid;gap:6px;padding:14px 0;margin-top:14px;border-top:1px solid var(--line);font-size:11px}
+.approvalWhy span{color:var(--muted);line-height:1.5}
+.commandActionButton{margin-top:auto;justify-content:center;text-align:center}
+.commandMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:12px}
+.commandMeta span{display:grid;gap:2px;text-align:center;padding:8px 4px;background:var(--canvas);border-radius:6px;font-size:9px;color:var(--muted)}
+.commandMeta b{font-size:13px;color:var(--ink)}
+/* First-class Relay workspace. */
+.relayPageHeader{margin-bottom:22px}
+.relayWorkspaceLayout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+.relayIncidentPicker{position:sticky;top:30px}
+.relayIncidentList{display:grid;margin-top:10px}
+.relayIncidentList a{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 8px;border-bottom:1px solid var(--line);color:inherit;text-decoration:none;border-radius:6px}
+.relayIncidentList a:hover,.relayIncidentList a[aria-current="page"]{background:var(--blue-soft)}
+.relayIncidentList a>div{display:grid;gap:4px;min-width:0}
+.relayIncidentList strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.relayIncidentList small{font-size:10px;color:var(--muted)}
+.relayIncidentList a>span{font-size:11px;font-weight:800;color:var(--blue-hover)}
+.relayWorkspaceMain{display:grid;gap:18px;min-width:0}
+.relayWorkspaceHero{border:1px solid var(--line);background:linear-gradient(135deg,var(--surface),var(--blue-soft));border-radius:12px;padding:22px}
+.relayWorkspaceHero h2{margin:6px 0 8px;font-size:24px}
+.relayWorkspaceHero p{color:var(--muted);line-height:1.55;max-width:850px}
+.relayWorkspaceStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}
+.relayWorkspaceStats>div{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:8px;padding:12px}
+.relayWorkspaceStats span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.relayWorkspaceStats strong{display:block;font-size:20px;margin-top:4px}
+@media(max-width:1180px){
+  .incidentCommandGrid{grid-template-columns:220px minmax(0,1fr)}
+  .recommendedActionPanel{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr);gap:16px}
+  .recommendedActionPanel .commandPanelHeading{grid-column:1/-1}
+  .recommendedActionLead,.recommendedActionList{grid-column:1}
+  .approvalWhy,.commandActionButton,.commandMeta{grid-column:2}
+  .commandActionButton{margin-top:0}
+}
+@media(max-width:900px){
+  .incidentCommandGrid,.relayWorkspaceLayout{grid-template-columns:1fr}
+  .incidentSourcePanel{order:2}.incidentGraphColumn{order:1}.recommendedActionPanel{order:3;display:flex}
+  .recommendedActionPanel>*{grid-column:auto}
+  .relayIncidentPicker{position:static}
+  .relayWorkspaceStats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+  .incidentCommandHeader{align-items:flex-start;flex-direction:column}
+  .causalGraph{height:auto;padding:12px;display:grid;gap:9px}
+  .causalGraphLines{display:none}
+  .graphNode,.graphHypothesis,.graphRootCause{position:static;width:auto}
+  .reasoningTrailSteps{grid-template-columns:1fr}
+  .reasoningTrailSteps>div{border-right:0;border-bottom:1px solid var(--line)}
+  .reasoningTrailSteps>div:last-child{border-bottom:0}
+  .relayWorkspaceStats{grid-template-columns:1fr 1fr}
+}
