@@ -61,6 +61,7 @@ function stableInvariantPayload(packet: CanonicalReasoningPacket): string {
     missingEvidence: [...packet.hypothesis.missingEvidence],
     actions: packet.actions.map((action) => ({
       id: action.id,
+      description: action.description,
       risk: action.risk,
       approval: action.approval,
     })),
@@ -173,18 +174,17 @@ function renderLowBandwidth(packet: CanonicalReasoningPacket): Pick<
   "title" | "subtitle" | "presentation" | "compactText"
 > {
   const gate = safetyGate(packet);
-  const firstAction = packet.actions[0];
-
   const compactText = [
     `INCIDENT: ${packet.incident.id}`,
     `CAUSE: ${packet.hypothesis.statement}`,
     `CONF: ${percent(packet.hypothesis.confidence)}%`,
     `CEILING: ${percent(packet.confidenceCeiling)}%`,
-    `EVIDENCE: ${packet.hypothesis.evidenceIds.length}`,
-    `MISSING: ${packet.hypothesis.missingEvidence.length}`,
-    `CONTRADICTIONS: ${packet.hypothesis.contradictions.length}`,
+    `EVIDENCE: ${packet.hypothesis.evidenceIds.join(", ") || "NONE"}`,
+    `MISSING: ${packet.hypothesis.missingEvidence.join("; ") || "NONE"}`,
+    `CONTRADICTIONS: ${packet.hypothesis.contradictions.join("; ") || "NONE"}`,
     `APPROVAL: ${gate === "human-approval-required" ? "REQUIRED" : "NOT REQUIRED"}`,
-    firstAction ? `ACTION: ${firstAction.description}` : "ACTION: NONE",
+    ...packet.actions.map((action) => `ACTION ${action.id}: ${action.description} [risk=${action.risk}; approval=${action.approval}]`),
+    ...(packet.actions.length === 0 ? ["ACTION: NONE"] : []),
   ].join("\n");
 
   return {
@@ -251,6 +251,10 @@ export function verifyBorderlessRelayInvariant(
 
   if (view.packetInvariantId !== relayInvariantId(packet)) {
     errors.push("Invariant fingerprint changed.");
+  }
+  const expectedCompactText = view.mode === "low-bandwidth" ? renderLowBandwidth(packet).compactText : undefined;
+  if (view.compactText !== expectedCompactText) {
+    errors.push("Compact message changed.");
   }
 
   return { valid: errors.length === 0, errors };

@@ -16,7 +16,7 @@ try {
     "--project", fileURLToPath(new URL("tsconfig.json", core)),
     "--noEmit", "false", "--module", "commonjs", "--moduleResolution", "node", "--outDir", output,
   ], { stdio: "inherit" });
-  const { runCheckoutInvestigation } = require(join(output, "demo/checkout-investigation.js"));
+  const { runCheckoutInvestigation, renderAllBorderlessRelayViews, verifyBorderlessRelayInvariant, relayInvariantId } = require(join(output, "index.js"));
   globalThis.fetch = () => { throw new Error("The seeded demo must not access the network"); };
 
   const result = await runCheckoutInvestigation();
@@ -66,12 +66,32 @@ try {
   assert.deepEqual([...collected], [...evidence.keys()]);
   assert.equal(packet.audit.at(-1).action, "mutation-awaiting-human-approval");
 
+  const views = renderAllBorderlessRelayViews(packet);
+  assert.equal(views.length, 4);
+  assert.ok(views.every((view) => verifyBorderlessRelayInvariant(packet, view).valid));
+  const compact = views.find((view) => view.mode === "low-bandwidth");
+  for (const value of [...packet.hypothesis.evidenceIds, ...packet.hypothesis.missingEvidence, ...packet.hypothesis.contradictions]) {
+    assert.ok(compact.compactText.includes(value), `Text export lost: ${value}`);
+  }
+  for (const action of packet.actions) {
+    assert.ok(compact.compactText.includes(action.description));
+    assert.ok(compact.compactText.includes(`risk=${action.risk}; approval=${action.approval}`));
+  }
+  assert.ok(!verifyBorderlessRelayInvariant(packet, { ...compact, compactText: "APPROVAL: NOT REQUIRED" }).valid);
+  assert.ok(!verifyBorderlessRelayInvariant(packet, { ...views[0], compactText: "An unverified replacement message" }).valid);
+  const changedAction = structuredClone(packet);
+  changedAction.actions[0].description = "A different mitigation";
+  assert.notEqual(relayInvariantId(changedAction), relayInvariantId(packet), "Message identity must include action descriptions");
+  const emptyPacket = { ...packet, actions: [], hypothesis: { ...packet.hypothesis, evidenceIds: [], missingEvidence: [], contradictions: [] } };
+  const emptyCompact = renderAllBorderlessRelayViews(emptyPacket).find((view) => view.mode === "low-bandwidth").compactText;
+  assert.ok(emptyCompact.includes("EVIDENCE: NONE") && emptyCompact.includes("ACTION: NONE"));
+
   const expected = structuredClone(result);
   packet.incident.title = "Changed by a caller";
   packet.evidence[0].metadata.after = 999;
   mitigation.approval = "approved";
   assert.deepEqual(await runCheckoutInvestigation(), expected, "A caller must not alter subsequent demos");
-  console.log("PASS: offline checkout demo, repeatability, provenance, audit chronology, approval, and run isolation");
+  console.log("PASS: offline checkout demo, repeatability, provenance, audit chronology, approval, run isolation, and complete verified relay exports");
 } finally {
   rmSync(output, { recursive: true, force: true });
 }

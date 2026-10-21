@@ -146,6 +146,24 @@ svg { flex-shrink: 0; }
 .confidenceBadge strong { display: block; font-size: 32px; color: var(--blue); font-variant-numeric: tabular-nums; }
 .confidenceBadge span, .stateBadge span { display: block; color: var(--muted); font-size: 12px; }
 .investigationGrid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 24px; }
+.investigationMain { display: grid; gap: 24px; min-width: 0; }
+.investigationGrid > aside { align-self: start; }
+.investigationNav { display: flex; flex-wrap: wrap; gap: 8px 24px; border-bottom: 1px solid var(--line); }
+.investigationNav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600; text-decoration: none; }
+.evidenceFacts { display: grid; gap: 10px; margin: 18px 0; font-size: 12px; }
+.evidenceFacts div { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 8px; }
+.evidenceFacts dt { color: var(--muted); }
+.evidenceFacts dd { margin: 0; }
+.evidenceUri { display: block; margin-top: 12px; }
+.evidenceCard:target { outline: 3px solid var(--blue); outline-offset: 4px; }
+.evidenceLinks { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.evidenceLinks a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; overflow-wrap: anywhere; }
+.investigationAudit { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; }
+.investigationAudit summary { padding: 12px 0; cursor: pointer; font-size: 14px; font-weight: 600; }
+.investigationAudit ol { display: grid; gap: 12px; padding-left: 20px; }
+.investigationAudit li { padding: 12px; border-left: 2px solid var(--line); font-size: 12px; }
+.investigationAudit li > time, .investigationAudit li > strong, .investigationAudit li > span { display: block; }
+.investigationAudit time { color: var(--muted); }
 .rootCause { font-size: 24px; line-height: 1.4; }
 .evidenceGrid, .twoColumn, .incidentFacts, .formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .evidenceGrid, .twoColumn { margin-top: 24px; }
@@ -179,7 +197,23 @@ svg { flex-shrink: 0; }
 .approvalResult.rejected { background: var(--red-soft); color: var(--red); }
 .approvalResult button { justify-self: start; margin-top: 8px; }
 .relayGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.relayModes { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 24px 0 0; border: 0; }
+.relayModes legend { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+.relayModes label { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; font-size: 13px; }
+.relayModes label:has(input:checked) { background: var(--blue-soft); border-color: var(--blue); color: var(--blue-hover); }
+.relayModes input { accent-color: var(--blue); margin: 0; }
+.relayContext { min-width: 0; }
+.relayContext h3 { font-size: 14px; }
+.relayContext .relayInvariantGrid { margin-top: 0; border-top: 0; padding-top: 0; }
+.relayCaveat { margin: 16px 0; font-size: 13px; }
+.relayCaveat > strong { color: var(--amber); }
+.relayCaveat ul { margin: 6px 0 0; padding-left: 20px; color: var(--muted); }
+.relayActions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.relayActions > span { flex-basis: 100%; }
+.copyStatus { min-height: 1.6em; margin: 12px 0 0; }
 .relayCard > span { display: block; font-size: 12px; color: var(--blue-hover); margin-bottom: 12px; }
+.relayCard { align-self: start; }
+.relayCard > p:not(.smallText) { font-size: 15px; line-height: 1.8; }
 .relayCard strong { display: block; font-size: 15px; }
 .relayCard pre { white-space: pre-wrap; line-height: 1.8; margin-bottom: 0; }
 .lowBandwidth { background: var(--ink); color: white; }
@@ -266,6 +300,7 @@ svg { flex-shrink: 0; }
 }
 @media (max-width: 1000px) {
   .grid { grid-template-columns: 1fr; }
+  .relayGrid { grid-template-columns: 1fr; }
   .responsePanel { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
   .responsePanel h2, .responsePanel > p { grid-column: 1; }
   .responsePanel .workerChange { grid-column: 2; grid-row: 1 / 4; align-self: center; }
@@ -362,9 +397,9 @@ svg { flex-shrink: 0; }
 .relayHeader small { color: var(--muted); font-size: 12px; }
 .relayHeader b { color: var(--green); font-size: 12px; flex-shrink: 0; }
 .relayInvariantGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
-.relayInvariantGrid > div { padding: 12px; border-radius: 6px; background: var(--surface); }
-.relayInvariantGrid span { color: var(--muted); font-size: 12px; }
-.relayInvariantGrid strong { font-size: 13px; margin-top: 4px; }
+.relayInvariantGrid > div { padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+.relayInvariantGrid span { display: block; color: var(--muted); font-size: 12px; }
+.relayInvariantGrid strong { display: block; font-size: 22px; margin-top: 4px; }
 .relayWarnings span { padding: 5px 8px; background: var(--amber-soft); color: var(--amber); font-size: 12px; border-radius: 5px; }
 .lowBandwidth { --surface: #20364f; --muted: #bdd0e7; --line: #416080; --blue-hover: #b5d2ff; --green: #98e3bd; --amber: #ffe0a3; --amber-soft: #443820; }
 .evaluationMetricGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
