@@ -58,13 +58,12 @@ export function RelayMessage({
   const [mode, setMode] = useState<BorderlessRelayMode>("technical-en");
   const [copyStatus, setCopyStatus] = useState("");
 
-  const view = views.find((item) => item.mode === mode) ?? views[0];
-  const message = useMemo(
-    () => (view ? serializeMessage(view) : ""),
-    [view],
-  );
+  const selectedView = views.find((item) => item.mode === mode) ?? views[0];
 
-  if (!view) return null;
+  if (!selectedView) return null;
+
+  const view = selectedView;
+  const message = useMemo(() => serializeMessage(view), [view]);
 
   async function copyMessage() {
     try {
