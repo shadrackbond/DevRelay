@@ -127,3 +127,16 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 6. **Complete:** Add human-approval action gate. [Review flow and limits](docs/APPROVAL_GATE.md).
 7. **Complete:** Persist investigation/audit history. [Storage and verification](docs/INVESTIGATION_HISTORY.md).
 8. Replace simulated providers with real integrations incrementally.
+
+
+## Vercel deployment
+
+DevRelay uses Node's SQLite API for local/single-instance persistence.
+
+On Vercel, the deployed filesystem is not suitable for durable SQLite storage. DevRelay therefore automatically uses `/tmp/devrelay.sqlite` so the application can boot and the demo flow can run.
+
+Important: `/tmp` is ephemeral. Incidents, investigation history, and approval decisions can disappear when the serverless instance is replaced or a new deployment starts.
+
+Use `/api/health` after deployment to verify runtime and persistence status.
+
+For production or multi-instance deployment, replace SQLite persistence with a shared durable database such as PostgreSQL.
