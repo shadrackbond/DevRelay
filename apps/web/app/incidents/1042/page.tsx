@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { runCheckoutInvestigation } from "@devrelay/core";
-import { ApprovalGate } from "../../components/ApprovalGate";
-import { BorderlessRelay } from "../../components/BorderlessRelay";
-import { InvestigationEvidence } from "../../components/InvestigationEvidence";
+import { InvestigationReview } from "../../components/InvestigationReview";
 
 export const metadata = { title: "Checkout demo investigation" };
 
@@ -44,7 +42,6 @@ export default async function IncidentPage() {
               failures, and database pressure in this seeded scenario.
             </p>
           </section>
-          <InvestigationEvidence packet={packet} />
         </div>
 
         <aside className="panel">
@@ -57,7 +54,7 @@ export default async function IncidentPage() {
                   <strong>{stage.label}</strong>
                   <p>{stage.detail}</p>
                   <span className={stage.status === "awaiting-approval" ? "waiting" : "done"}>
-                    {stage.status}
+                    {stage.status === "awaiting-approval" ? "approval required" : stage.status}
                   </span>
                 </div>
               </div>
@@ -115,22 +112,7 @@ export default async function IncidentPage() {
         </div>
       </section>
 
-      <section className="panel" id="response">
-        <span className="sectionLabel">Recommended response</span>
-        <div className="actionList">
-          {packet.actions.map((action) => (
-            <article key={action.id}>
-              <div>
-                <strong>{action.description}</strong>
-                <p>Risk: {action.risk} · Approval: {action.approval}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-        <ApprovalGate />
-      </section>
-
-      <BorderlessRelay packet={packet} />
+      <InvestigationReview packet={packet} />
 
     </div>
   );

@@ -54,11 +54,11 @@ try {
   check(`document.querySelector('nav a[aria-current="page"]').getAttribute('href') === '/investigations'`);
 
   open("/incidents/1042");
-  browser("find", "role", "button", "click", "--name", "Approve mitigation");
-  browser("wait", "--text", "Mitigation approved");
-  browser("find", "role", "button", "click", "--name", "Reset demo decision");
-  browser("find", "role", "button", "click", "--name", "Reject", "--exact");
-  browser("wait", "--text", "Mitigation rejected");
+  browser("find", "role", "button", "click", "--name", "Approve action");
+  browser("wait", "--text", "Action approved");
+  open("/incidents/1042");
+  browser("find", "role", "button", "click", "--name", "Reject action", "--exact");
+  browser("wait", "--text", "Action rejected");
   console.log("PASS: keyboard navigation and both approval outcomes");
 
   open("/investigations/new");

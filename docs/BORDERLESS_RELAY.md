@@ -38,7 +38,7 @@ evidence with its reference ID, source, observation time in UTC, freshness, and
 support/context/contradiction role. Simulated evidence is labeled explicitly.
 HTTP sources can be opened; demo-only protocol references are displayed as text.
 An expandable audit trail links collection and reasoning events to the same
-evidence cards. Empty investigations explain why no evidence has been accepted.
+evidence cards and displays temporary server-recorded approval decisions. Empty investigations explain why no evidence has been accepted.
 
 Candidate and Relay evidence references jump to the corresponding provenance
 card. Provider failures and insufficient-evidence states remain visible rather
@@ -49,7 +49,10 @@ than being replaced with a demo diagnosis.
 The Relay screen shows one format at a time. Native radio controls support mouse,
 touch, Tab, and arrow-key selection. The preview changes while a separate context
 panel keeps confidence, ceiling, supporting references, contradictions, gaps, and
-human-approval requirements visible.
+human-approval requirements visible. Approving or rejecting a response updates
+the packet used by the evidence audit and every Relay format. The policy remains
+required for risky actions even after a decision; approval state records whether
+it was approved or rejected. See [the approval gate guide](APPROVAL_GATE.md).
 
 Copy message and Download text share the chosen presentation plus the full
 canonical text summary. The low-bandwidth option shares that summary directly.
