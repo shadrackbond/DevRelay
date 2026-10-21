@@ -54,6 +54,10 @@ jobs:
         id: build
         run: pnpm build
 
+      - name: Verify checkout demo
+        id: demo
+        run: pnpm check:demo
+
       - name: Capture failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -77,6 +81,7 @@ jobs:
             echo "| Lint | \`${{ steps.lint.outcome }}\` |"
             echo "| Typecheck | \`${{ steps.typecheck.outcome }}\` |"
             echo "| Build | \`${{ steps.build.outcome }}\` |"
+            echo "| Checkout demo | \`${{ steps.demo.outcome }}\` |"
             echo ""
             echo "- Commit: \`${{ github.sha }}\`"
             echo "- Ref: \`${{ github.ref_name }}\`"

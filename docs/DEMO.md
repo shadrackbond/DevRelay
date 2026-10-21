@@ -2,6 +2,30 @@
 
 This vertical slice demonstrates the full DevRelay reasoning path using deterministic evidence.
 
+## Run the seeded demo
+
+After the README quick start, open [the checkout demo](http://localhost:3000/incidents/1042).
+The dashboard, incident queue, and audit screen also link to or use this seed.
+No credentials, external services, or database setup are required for the demo.
+The seed lives in `packages/core/src/demo/checkout-investigation.ts` and is
+available automatically; there is no database seed command to run.
+
+Verify the seed without starting the web server:
+
+```bash
+pnpm check:demo
+```
+
+This checks repeatable output, all four evidence sources, diagnosis provenance,
+audit chronology, and the required mitigation approval. It rejects network fetches
+and verifies that modifying a result cannot affect the next run. CI runs this
+check too.
+
+Every run uses the fixed scenario time **2026-10-19 20:45 UTC** and produces
+the same evidence, diagnosis, confidence, actions, and audit trail. Freshness
+labels describe that scenario time, not the current wall clock. Approval in the
+demo is a local UI decision and does not execute a production change.
+
 ## Incident
 
 Checkout failures rise from **0.2% to 8.7%**.

@@ -92,7 +92,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 
 ## Next implementation slice
 
-1. Seed the deterministic checkout-failure demo.
+1. **Complete:** Seed the deterministic checkout-failure demo. [Run and verify it](docs/DEMO.md).
 2. Implement GitHub evidence adapter.
 3. Add simulated log and database providers.
 4. Add synthesis/reasoning agent.
