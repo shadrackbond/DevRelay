@@ -1,10 +1,31 @@
+function sourceStatus(name: string): { label: string; className: string; detail: string } {
+  if (name === "GitHub" || name === "GitHub Actions") {
+    return {
+      label: process.env.GITHUB_TOKEN ? "Configured" : "Public-only",
+      className: process.env.GITHUB_TOKEN ? "done" : "waiting",
+      detail: process.env.GITHUB_TOKEN
+        ? "Authenticated GitHub access is configured."
+        : "Public repositories work, but private access and higher rate limits require GITHUB_TOKEN.",
+    };
+  }
+
+  if (name === "Runtime Logs") {
+    return process.env.LOG_SOURCE_URL
+      ? { label: "Configured", className: "done", detail: "Runtime log source is configured." }
+      : { label: "Not configured", className: "waiting", detail: "Set LOG_SOURCE_URL or use simulated://checkout for the demo." };
+  }
+
+  return process.env.DB_TELEMETRY_URL
+    ? { label: "Configured", className: "done", detail: "Database telemetry source is configured." }
+    : { label: "Not configured", className: "waiting", detail: "Set DB_TELEMETRY_URL or use simulated://checkout for the demo." };
+}
 
 const integrations = [
-  ["GitHub", "Repository metadata, commits, pull requests, and changed files", "Available"],
-  ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage", "Available"],
-  ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation", "Available"],
-  ["PostgreSQL", "Read-only connection, lock, wait, and long-query telemetry", "Available"],
-];
+  ["GitHub", "Repository metadata, commits, pull requests, and changed files"],
+  ["GitHub Actions", "Workflow runs, jobs, failed steps, and validation coverage"],
+  ["Runtime Logs", "Vendor-neutral HTTP runtime log ingestion and signature correlation"],
+  ["PostgreSQL", "Read-only connection, lock, wait, and long-query telemetry"],
+] as const;
 
 export const metadata = { title: "Evidence sources" };
 
@@ -21,22 +42,29 @@ export default function IntegrationsPage() {
       </header>
 
       <div className="cardGrid">
-        {integrations.map(([name, description, status]) => (
-          <article className="panel" key={name}>
-            <div className="panelTitle">
-              <h2>{name}</h2>
-              <span className={status === "Available" ? "done" : "statusBadge"}>{status}</span>
-            </div>
-            <p className="muted">{description}</p>
-            {(name === "GitHub" || name === "GitHub Actions" || name === "Runtime Logs" || name === "PostgreSQL") && (
+        {integrations.map(([name, description]) => {
+          const status = sourceStatus(name);
+          return (
+            <article className="panel" key={name}>
+              <div className="panelTitle">
+                <h2>{name}</h2>
+                <span className={status.className}>{status.label}</span>
+              </div>
+              <p className="muted">{description}</p>
               <div className="integrationDetails">
-                <span>{name === "Runtime Logs" ? "Configure LOG_SOURCE_URL" : name === "PostgreSQL" ? "Configure DB_TELEMETRY_URL" : "Configure GITHUB_TOKEN to avoid anonymous rate limits"}</span>
-                <span>{name === "Runtime Logs" ? "Optional LOG_SOURCE_TOKEN bearer auth" : name === "PostgreSQL" ? "Optional DB_TELEMETRY_TOKEN bearer auth" : "Private repos: GITHUB_TOKEN required"}</span>
+                <span>{status.detail}</span>
+                <span>
+                  {name === "Runtime Logs"
+                    ? "Optional LOG_SOURCE_TOKEN bearer auth"
+                    : name === "PostgreSQL"
+                      ? "Optional DB_TELEMETRY_TOKEN bearer auth"
+                      : "Private repositories require GITHUB_TOKEN"}
+                </span>
                 <span>Read-only investigation</span>
               </div>
-            )}
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </>
   );
