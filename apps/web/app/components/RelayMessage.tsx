@@ -63,10 +63,12 @@ export function RelayMessage({
 
   if (!view) return null;
 
+  const viewTitle = view.title;
+
   async function copyMessage() {
     try {
       await navigator.clipboard.writeText(message);
-      setCopyStatus(`${view.title} message copied.`);
+      setCopyStatus(`${viewTitle} message copied.`);
     } catch {
       setCopyStatus(
         "Copy is unavailable in this browser. Use Download text instead.",
@@ -85,7 +87,7 @@ export function RelayMessage({
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setCopyStatus(`${view.title} message downloaded.`);
+    setCopyStatus(`${viewTitle} message downloaded.`);
   }
 
   return (
