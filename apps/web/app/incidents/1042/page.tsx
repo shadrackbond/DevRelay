@@ -2,22 +2,13 @@ import Link from "next/link";
 import { runCheckoutInvestigation } from "@devrelay/core";
 import { ApprovalGate } from "../../components/ApprovalGate";
 import { BorderlessRelay } from "../../components/BorderlessRelay";
+import { InvestigationEvidence } from "../../components/InvestigationEvidence";
 
 export const metadata = { title: "Checkout demo investigation" };
-
-const kindLabel: Record<string, string> = {
-  repository: "GitHub",
-  ci: "CI/CD",
-  logs: "Runtime logs",
-  database: "Database",
-  monitoring: "Monitoring",
-  docs: "Documentation",
-};
 
 export default async function IncidentPage() {
   const { packet, stages } = await runCheckoutInvestigation();
   const confidence = Math.round(packet.hypothesis.confidence * 100);
-
 
   return (
     <div className="incidentShell">
@@ -38,28 +29,23 @@ export default async function IncidentPage() {
         </div>
       </section>
 
-      <div className="investigationGrid">
-        <section className="panel">
-          <span className="sectionLabel">Root-cause diagnosis</span>
-          <h2 className="rootCause">{packet.hypothesis.statement}</h2>
-          <p className="muted">
-            DevRelay correlated repository change history, CI coverage, runtime
-            failures, and live database pressure.
-          </p>
+      <nav className="investigationNav" aria-label="Investigation sections">
+        <a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
+        <a href="#response">Response</a><a href="#relay">Borderless Relay</a>
+      </nav>
 
-          <div className="evidenceGrid">
-            {packet.evidence.map((item) => (
-              <article className="evidenceCard" key={item.id}>
-                <div className="evidenceHeader">
-                  <strong>{kindLabel[item.kind] ?? item.kind}</strong>
-                  <span className="fresh">{item.freshness}</span>
-                </div>
-                <p>{item.summary}</p>
-                <code>{item.id}</code>
-              </article>
-            ))}
-          </div>
-        </section>
+      <div className="investigationGrid">
+        <div className="investigationMain">
+          <section className="panel" id="diagnosis">
+            <span className="sectionLabel">Root-cause diagnosis</span>
+            <h2 className="rootCause">{packet.hypothesis.statement}</h2>
+            <p className="muted">
+              DevRelay correlated repository change history, CI coverage, runtime
+              failures, and database pressure in this seeded scenario.
+            </p>
+          </section>
+          <InvestigationEvidence packet={packet} />
+        </div>
 
         <aside className="panel">
           <span className="sectionLabel">Investigation timeline</span>
@@ -146,18 +132,6 @@ export default async function IncidentPage() {
 
       <BorderlessRelay packet={packet} />
 
-      <section className="panel">
-        <span className="sectionLabel">Audit trail</span>
-        <div className="auditList">
-          {packet.audit.map((entry, index) => (
-            <div key={index}>
-              <code>{new Date(entry.timestamp).toISOString().slice(11, 19)}</code>
-              <strong>{entry.actor}</strong>
-              <span>{entry.action}</span>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

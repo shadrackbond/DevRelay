@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SIMULATED_CHECKOUT_SOURCE } from "@devrelay/integrations";
 import { BorderlessRelay } from "../../components/BorderlessRelay";
+import { InvestigationEvidence } from "../../components/InvestigationEvidence";
 import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
 import { getStoredIncident } from "../../lib/incident-store";
@@ -133,7 +134,12 @@ export default async function DynamicIncidentPage({
         </div>
       )}
 
-      <section className="panel reasoningPanel">
+      <nav className="investigationNav" aria-label="Investigation sections">
+        <a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
+        <a href="#response">Response</a><a href="#relay">Borderless Relay</a>
+      </nav>
+
+      <section className="panel reasoningPanel" id="diagnosis">
         <div className="panelTitle">
           <div>
             <span className="sectionLabel">Reasoning Agent</span>
@@ -215,6 +221,10 @@ export default async function DynamicIncidentPage({
                 <a className="inlineLink" href={candidate.url} target="_blank" rel="noreferrer">
                   Inspect candidate ↗
                 </a>
+                <div className="evidenceLinks" aria-label="Candidate evidence references">
+                  {candidate.supportingEvidenceIds.map((id) => <a key={id} href={`#evidence-${id}`}>{id}</a>)}
+                  {candidate.contradictingEvidenceIds.map((id) => <a key={id} href={`#evidence-${id}`}>Contradiction: {id}</a>)}
+                </div>
               </article>
             ))}
           </div>
@@ -246,7 +256,7 @@ export default async function DynamicIncidentPage({
           </div>
         )}
 
-        <div className="reasoningActions">
+        <div className="reasoningActions" id="response">
           <span className="sectionLabel">Recommended actions</span>
           {reasoningResult.packet.actions.map((action) => (
             <article key={action.id}>
@@ -680,47 +690,8 @@ export default async function DynamicIncidentPage({
         ) : null}
       </section>
 
+      <InvestigationEvidence packet={reasoningResult.packet} />
       <BorderlessRelay packet={reasoningResult.packet} />
-
-      <section className="panel">
-        <span className="sectionLabel">Canonical Reasoning Packet</span>
-        <h2>Auditable synthesis output</h2>
-        <p className="muted">
-          This packet is the source of truth for downstream language, low-bandwidth,
-          and approval views. Presentation layers may simplify wording but cannot
-          change the evidence IDs, confidence ceiling, contradictions, or safety gates.
-        </p>
-
-        <div className="reasoningEvidenceSummary">
-          <div>
-            <span>Repository evidence</span>
-            <strong>{repositoryResult.evidence.length}</strong>
-          </div>
-          <div>
-            <span>CI evidence</span>
-            <strong>{ciResult.evidence.length}</strong>
-          </div>
-          <div>
-            <span>Runtime log evidence</span>
-            <strong>{logResult.evidence.length}</strong>
-          </div>
-          <div>
-            <span>Database evidence</span>
-            <strong>{databaseResult.evidence.length}</strong>
-          </div>
-          <div>
-            <span>Total normalized evidence</span>
-            <strong>{repositoryResult.evidence.length + ciResult.evidence.length + logResult.evidence.length + databaseResult.evidence.length}</strong>
-          </div>
-        </div>
-
-        <div className="packetAudit">
-          <span>Packet generated</span>
-          <code>{reasoningResult.packet.generatedAt}</code>
-          <span>Audit events</span>
-          <strong>{reasoningResult.packet.audit.length}</strong>
-        </div>
-      </section>
     </>
   );
 }
