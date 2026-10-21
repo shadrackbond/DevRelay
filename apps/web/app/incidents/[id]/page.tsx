@@ -2,12 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SIMULATED_CHECKOUT_SOURCE } from "@devrelay/integrations";
 import { InvestigationReview } from "../../components/InvestigationReview";
-import { runCiAgent } from "../../lib/ci-agent";
-import { runDatabaseAgent } from "../../lib/database-agent";
-import { getStoredIncident } from "../../lib/incident-store";
-import { runLogAgent } from "../../lib/log-agent";
-import { runReasoningAgent } from "../../lib/reasoning-agent";
-import { runRepositoryAgent } from "../../lib/repository-agent";
+import { getStoredIncident, getWorkspaceId } from "../../lib/incident-store";
+import { readInvestigation, readInvestigationHistory } from "../../lib/history-store";
+import { investigate } from "../../lib/investigation-runner";
 
 export const metadata = { title: "Incident investigation" };
 
@@ -28,31 +25,24 @@ function signalClass(signal: string) {
 }
 
 export default async function DynamicIncidentPage({
-  params,
+  params, searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ run?: string | string[] }>;
 }) {
   const { id } = await params;
   const incident = await getStoredIncident(id);
 
   if (!incident) notFound();
 
-  const repositoryResult = await runRepositoryAgent(incident);
-  const ciResult = await runCiAgent(incident, repositoryResult);
-  const logResult = await runLogAgent(incident, repositoryResult, ciResult);
-  const databaseResult = await runDatabaseAgent(
-    incident,
-    repositoryResult,
-    ciResult,
-    logResult,
-  );
-  const reasoningResult = runReasoningAgent({
-    incident,
-    repositoryResult,
-    ciResult,
-    logResult,
-    databaseResult,
-  });
+  const ownerId = await getWorkspaceId();
+  const selected = (await searchParams).run;
+  if (selected !== undefined && typeof selected !== "string") notFound();
+  const run = selected ? readInvestigation(ownerId, selected) : await investigate(ownerId, id);
+  if (!run || run.incidentId !== id || run.details.kind !== "live") notFound();
+  const { repositoryResult, ciResult, logResult, databaseResult } = run.details;
+  const reasoningResult = { ...run.details.reasoningResult, packet: run.packet };
+  const history = readInvestigationHistory(ownerId, id);
 
   const repositoryReady = repositoryResult.status === "complete";
   const ciReady = ciResult.status === "complete";
@@ -135,7 +125,7 @@ export default async function DynamicIncidentPage({
 
       <nav className="investigationNav" aria-label="Investigation sections">
         <a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
-        <a href="#response">Response</a><a href="#relay">Borderless Relay</a>
+        <a href="#history">History</a><a href="#response">Response</a><a href="#relay">Borderless Relay</a>
       </nav>
 
       <section className="panel reasoningPanel" id="diagnosis">
@@ -677,7 +667,7 @@ export default async function DynamicIncidentPage({
         ) : null}
       </section>
 
-      <InvestigationReview packet={reasoningResult.packet} />
+      <InvestigationReview run={run} history={history} />
     </>
   );
 }

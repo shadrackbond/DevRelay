@@ -44,7 +44,11 @@ cp .env.example apps/web/.env.local
 pnpm dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. Use Node.js 22.13+ (22.x) or Node.js 24+.
+
+Investigation and audit history is saved locally in SQLite. For configuration,
+browser workspace access, backup, and deployment requirements, see
+[Persisted history](docs/INVESTIGATION_HISTORY.md).
 
 Next.js loads environment files from `apps/web`, so put local credentials in
 `apps/web/.env.local`, not the repository root. Restart the web server after
@@ -67,7 +71,7 @@ server environment.
   sends `service` and `incidentAt` query parameters. The response shape is defined
   by `DatabaseTelemetrySnapshot` in
   [database-telemetry.ts](packages/integrations/src/database-telemetry.ts).
-  `DATABASE_URL` does not connect this agent.
+  `DEVRELAY_DB_PATH` selects application history storage; it does not connect this agent.
 
 The example endpoint URLs displayed in the UI are placeholders. Without actual
 log and database adapters or an explicitly selected simulation, those agents
@@ -121,5 +125,5 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 4. **Complete:** Add synthesis/reasoning agent. [Rules and verification](docs/REASONING_AGENT.md).
 5. **Complete:** Build Incident Investigation and Borderless Relay screens. [Screen guide](docs/BORDERLESS_RELAY.md).
 6. **Complete:** Add human-approval action gate. [Review flow and limits](docs/APPROVAL_GATE.md).
-7. Persist investigation/audit history.
+7. **Complete:** Persist investigation/audit history. [Storage and verification](docs/INVESTIGATION_HISTORY.md).
 8. Replace simulated providers with real integrations incrementally.

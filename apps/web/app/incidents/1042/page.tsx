@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { runCheckoutInvestigation } from "@devrelay/core";
+import { notFound } from "next/navigation";
+import { getWorkspaceId } from "../../lib/incident-store";
+import { readInvestigation, readInvestigationHistory } from "../../lib/history-store";
+import { investigate } from "../../lib/investigation-runner";
 import { InvestigationReview } from "../../components/InvestigationReview";
 
 export const metadata = { title: "Checkout demo investigation" };
 
-export default async function IncidentPage() {
-  const { packet, stages } = await runCheckoutInvestigation();
+export default async function IncidentPage({ searchParams }: { searchParams: Promise<{ run?: string | string[] }> }) {
+  const ownerId = await getWorkspaceId();
+  const selected = (await searchParams).run;
+  if (selected !== undefined && typeof selected !== "string") notFound();
+  const run = selected ? readInvestigation(ownerId, selected) : await investigate(ownerId, "1042");
+  if (!run || run.incidentId !== "1042" || run.details.kind !== "demo") notFound();
+  const { packet } = run;
+  const { stages } = run.details;
+  const history = readInvestigationHistory(ownerId, "1042");
   const confidence = Math.round(packet.hypothesis.confidence * 100);
 
   return (
@@ -29,7 +39,7 @@ export default async function IncidentPage() {
 
       <nav className="investigationNav" aria-label="Investigation sections">
         <a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
-        <a href="#response">Response</a><a href="#relay">Borderless Relay</a>
+        <a href="#history">History</a><a href="#response">Response</a><a href="#relay">Borderless Relay</a>
       </nav>
 
       <div className="investigationGrid">
@@ -112,7 +122,7 @@ export default async function IncidentPage() {
         </div>
       </section>
 
-      <InvestigationReview packet={packet} />
+      <InvestigationReview run={run} history={history} />
 
     </div>
   );

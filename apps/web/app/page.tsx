@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { runCheckoutInvestigation } from "@devrelay/core";
-import { listStoredIncidents } from "./lib/incident-store";
+import { latestInvestigation } from "./lib/history-store";
+import { getWorkspaceId, listStoredIncidents } from "./lib/incident-store";
 
 export const metadata = { title: "Command center" };
 
 export default async function Home() {
-  const [{ packet, stages }, stored] = await Promise.all([
+  const [{ packet: seedPacket, stages }, stored, saved] = await Promise.all([
     runCheckoutInvestigation(),
     listStoredIncidents(),
+    getWorkspaceId().then((owner) => latestInvestigation(owner, "1042")),
   ]);
+
+  const packet = saved?.packet ?? seedPacket;
+  const mitigation = packet.actions.find((action) => action.id === "action-reduce-workers");
+  const decision = mitigation?.approval;
 
   return (
     <>
@@ -48,7 +54,7 @@ export default async function Home() {
         </article>
 
         <aside className="responsePanel" aria-label="Recommended response">
-          <span className="waiting">Approval required</span>
+          <span className="waiting">{decision === "approved" ? "Mitigation approved" : decision === "rejected" ? "Mitigation rejected" : "Approval required"}</span>
           <h2>A clear next step.<br />You make the call.</h2>
           <p>Reduce checkout worker concurrency to relieve pressure on the database.</p>
           <div className="workerChange"><span>Workers</span><div><s>80</s><span aria-hidden="true">→</span><strong>30</strong></div></div>

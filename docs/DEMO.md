@@ -24,9 +24,10 @@ check too.
 Every run uses the fixed scenario time **2026-10-19 20:45 UTC** and produces
 the same evidence, diagnosis, confidence, actions, and audit trail. Freshness
 labels describe that scenario time, not the current wall clock. Approval in the
-demo is a server-validated, temporary review decision and does not execute a
+demo is a server-validated, saved review decision and does not execute a
 production change. See [the approval gate guide](APPROVAL_GATE.md) for the flow,
-verification, and limits.
+verification, and limits. Decisions survive reloads and server restarts; use
+**Run investigation again** to save a new snapshot while preserving earlier history.
 
 ## Incident
 

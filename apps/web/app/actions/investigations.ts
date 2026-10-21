@@ -1,5 +1,9 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+import { investigate } from "../lib/investigation-runner";
+import { latestInvestigation } from "../lib/history-store";
+import { getWorkspaceId } from "../lib/incident-store";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -27,7 +31,7 @@ export async function createInvestigation(formData: FormData): Promise<void> {
       : "medium";
 
   const now = new Date().toISOString();
-  const id = `INC-${Date.now().toString(36).toUpperCase()}`;
+  const id = `INC-${randomUUID().toUpperCase()}`;
 
   const incident: StoredIncident = {
     id,
@@ -45,4 +49,16 @@ export async function createInvestigation(formData: FormData): Promise<void> {
   revalidatePath("/incidents");
   revalidatePath("/investigations");
   redirect(`/incidents/${incident.id}`);
+}
+
+export async function rerunInvestigation(incidentId: string, previousId: string): Promise<void> {
+  const ownerId = await getWorkspaceId();
+  const current = latestInvestigation(ownerId, incidentId);
+  if (!current) throw new Error("Investigation is unavailable.");
+  if (current.id === previousId) await investigate(ownerId, incidentId, previousId);
+  revalidatePath(`/incidents/${incidentId}`);
+  revalidatePath("/incidents");
+  revalidatePath("/investigations");
+  revalidatePath("/audit");
+  redirect(`/incidents/${incidentId}`);
 }
