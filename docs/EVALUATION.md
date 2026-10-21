@@ -42,11 +42,21 @@ The first suite includes:
 7. repository-only insufficient evidence;
 8. repository + CI with missing runtime sources.
 
+The eighth case expects abstention: unavailable runtime sources contribute no
+confidence. Ground-truth evidence IDs cover explicitly supporting evidence only;
+neutral and contradictory context stays in the packet without becoming a
+supporting citation. Abstention cases have no asserted root cause or supporting
+citations to retrieve.
+
 The suite intentionally includes negative and insufficient-evidence cases so the system is not rewarded merely for always selecting a code change.
 
 ## CI quality gates
 
 The `/evaluation` page executes the suite during Next.js build and asserts thresholds.
+
+`pnpm check:reasoning` also runs the suite without a web server and checks edge
+cases for provenance, failure states, freshness ceilings, ties, approval, and
+simulated evidence. The numerical quality gates below remain unchanged.
 
 Current gates:
 
