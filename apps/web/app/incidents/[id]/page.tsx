@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SIMULATED_CHECKOUT_SOURCE } from "@devrelay/integrations";
 import { InvestigationReview } from "../../components/InvestigationReview";
+import { IncidentCommandSurface } from "../../components/IncidentCommandSurface";
 import { getStoredIncident, getWorkspaceId } from "../../lib/incident-store";
 import { readInvestigation, readInvestigationHistory } from "../../lib/history-store";
 import { investigate } from "../../lib/investigation-runner";
@@ -124,9 +125,20 @@ export default async function DynamicIncidentPage({
       )}
 
       <nav className="investigationNav" aria-label="Investigation sections">
-        <a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
-        <a href="#history">History</a><a href="#response">Response</a><a href="#relay">Borderless Relay</a>
+        <a href="#workspace">Workspace</a><a href="#diagnosis">Diagnosis</a><a href="#evidence">Evidence</a>
+        <a href="#response">Response</a><a href="#relay">Relay</a><a href="#history">History</a>
       </nav>
+
+      <div id="workspace">
+        <IncidentCommandSurface
+          packet={run.packet}
+          repositoryResult={repositoryResult}
+          ciResult={ciResult}
+          logResult={logResult}
+          databaseResult={databaseResult}
+          reasoningResult={reasoningResult}
+        />
+      </div>
 
       <section className="panel reasoningPanel" id="diagnosis">
         <div className="panelTitle">
