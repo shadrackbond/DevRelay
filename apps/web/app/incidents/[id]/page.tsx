@@ -493,6 +493,9 @@ export default async function DynamicIncidentPage({
             <strong>Runtime logs are not connected yet</strong>
             <p>{logResult.error}</p>
             <code>LOG_SOURCE_URL=https://your-read-only-log-adapter.example/query</code>
+            <div className="providerActions">
+              <Link className="inlineLink" href="/integrations">Configure evidence sources →</Link>
+            </div>
           </div>
         ) : logResult.status === "error" ? (
           <div className="providerError">
@@ -576,6 +579,9 @@ export default async function DynamicIncidentPage({
             <strong>Database telemetry is not connected yet</strong>
             <p>{databaseResult.error}</p>
             <code>DB_TELEMETRY_URL=https://your-read-only-db-health.example/health</code>
+            <div className="providerActions">
+              <Link className="inlineLink" href="/integrations">Configure evidence sources →</Link>
+            </div>
           </div>
         ) : databaseResult.status === "error" ? (
           <div className="providerError">
