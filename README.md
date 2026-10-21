@@ -120,6 +120,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/MVP.md](docs/MVP.md).
 3. **Complete:** Add simulated log and database providers. See the simulation setup above.
 4. **Complete:** Add synthesis/reasoning agent. [Rules and verification](docs/REASONING_AGENT.md).
 5. **Complete:** Build Incident Investigation and Borderless Relay screens. [Screen guide](docs/BORDERLESS_RELAY.md).
-6. Add human-approval action gate.
+6. **Complete:** Add human-approval action gate. [Review flow and limits](docs/APPROVAL_GATE.md).
 7. Persist investigation/audit history.
 8. Replace simulated providers with real integrations incrementally.

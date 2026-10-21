@@ -72,6 +72,11 @@ DevRelay is read-first.
 
 Read-only investigations can execute automatically. Mutations—opening a PR, changing configuration, restarting services, or modifying infrastructure—must pass a policy gate. Medium/high-risk actions require explicit human approval.
 
+The current [approval gate](APPROVAL_GATE.md) validates proposal-specific demo
+decisions on the server and keeps their audit and Relay state aligned. It has no
+authenticated reviewer identity or production action executor; durable history
+and production authorization remain separate work.
+
 ## Hackathon MVP
 
 The MVP proves the architecture with:
