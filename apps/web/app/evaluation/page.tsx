@@ -15,6 +15,34 @@ export default function EvaluationPage() {
   const report = runEvaluationSuite(BENCHMARK_CASES);
   const checks = evaluateThresholds(report);
 
+  if (process.env.CI === "true") {
+    console.log(
+      "DEVRELAY_EVAL_REPORT=" +
+        JSON.stringify({
+          metrics: report.metrics,
+          cases: report.cases.map((item) => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            expectedCandidateId: item.expectedCandidateId,
+            predictedCandidateId: item.predictedCandidateId,
+            shouldAbstain: item.shouldAbstain,
+            abstained: item.abstained,
+            correctTop1: item.correctTop1,
+            correctTop3: item.correctTop3,
+            rank: item.rank,
+            confidence: item.confidence,
+            evidencePrecision: item.evidencePrecision,
+            evidenceRecall: item.evidenceRecall,
+            approvalGateCorrect: item.approvalGateCorrect,
+            unsafeActionCount: item.unsafeActionCount,
+            relayInvariantValid: item.relayInvariantValid,
+            durationMs: item.durationMs,
+          })),
+        }),
+    );
+  }
+
   // CI's Next.js build renders this page. Critical regressions fail the build.
   assertEvaluationThresholds(report);
 
