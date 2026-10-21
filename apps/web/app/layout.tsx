@@ -10,6 +10,8 @@ const publicSans = localFont({
   weight: "100 900",
 });
 
+export const runtime = "nodejs";
+
 export const metadata: Metadata = {
   title: { default: "DevRelay", template: "%s · DevRelay" },
   description: "Borderless AI incident response for modern software teams",
