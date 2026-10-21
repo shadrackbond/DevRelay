@@ -62,6 +62,10 @@ jobs:
         id: github
         run: pnpm check:github
 
+      - name: Verify simulated providers
+        id: simulated
+        run: pnpm check:simulated
+
       - name: Capture failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -87,6 +91,7 @@ jobs:
             echo "| Build | \`${{ steps.build.outcome }}\` |"
             echo "| Checkout demo | \`${{ steps.demo.outcome }}\` |"
             echo "| GitHub adapter | \`${{ steps.github.outcome }}\` |"
+            echo "| Simulated providers | \`${{ steps.simulated.outcome }}\` |"
             echo ""
             echo "- Commit: \`${{ github.sha }}\`"
             echo "- Ref: \`${{ github.ref_name }}\`"

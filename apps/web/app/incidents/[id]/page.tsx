@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SIMULATED_CHECKOUT_SOURCE } from "@devrelay/integrations";
 import { BorderlessRelay } from "../../components/BorderlessRelay";
 import { runCiAgent } from "../../lib/ci-agent";
 import { runDatabaseAgent } from "../../lib/database-agent";
@@ -124,6 +125,13 @@ export default async function DynamicIncidentPage({
           <span>investigation state</span>
         </div>
       </section>
+
+      {[logResult.source, databaseResult.source].includes(SIMULATED_CHECKOUT_SOURCE) && (
+        <div className="callout warn" role="note">
+          <strong>Simulated evidence</strong>
+          <p>Sources marked simulated use checkout demo fixtures. Their signals and confidence describe the demo scenario and do not verify production health.</p>
+        </div>
+      )}
 
       <section className="panel reasoningPanel">
         <div className="panelTitle">

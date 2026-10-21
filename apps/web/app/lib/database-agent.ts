@@ -2,6 +2,8 @@ import type { Evidence } from "@devrelay/core";
 import {
   DatabaseTelemetryProviderError,
   HttpDatabaseTelemetryProvider,
+  SIMULATED_CHECKOUT_SOURCE,
+  SimulatedDatabaseTelemetryProvider,
   type DatabaseTelemetrySnapshot,
 } from "@devrelay/integrations";
 import type { CiAgentResult } from "./ci-agent";
@@ -172,6 +174,7 @@ function findingToEvidence(
     observedAt: snapshot.capturedAt,
     freshness: "fresh",
     metadata: {
+      simulated: snapshot.metadata?.simulated === true,
       signal: finding.signal,
       supportScore: finding.supportScore,
       reasons: finding.reasons,
@@ -199,10 +202,10 @@ export async function runDatabaseAgent(
     };
   }
 
-  const provider = new HttpDatabaseTelemetryProvider(
-    telemetryUrl,
-    process.env.DB_TELEMETRY_TOKEN,
-  );
+  const simulated = telemetryUrl === SIMULATED_CHECKOUT_SOURCE;
+  const provider = simulated
+    ? new SimulatedDatabaseTelemetryProvider()
+    : new HttpDatabaseTelemetryProvider(telemetryUrl, process.env.DB_TELEMETRY_TOKEN);
 
   try {
     const snapshot = await provider.inspect({
@@ -227,6 +230,7 @@ export async function runDatabaseAgent(
       status: "complete",
       source: telemetryUrl,
       summary:
+        (simulated ? "Simulated checkout evidence. " : "") +
         `Database telemetry captured ${snapshot.connections.active}/${snapshot.connections.max} active connections, ` +
         `${snapshot.connections.waiting} waiting, and ${snapshot.locks.blockedSessions} blocked session(s). ` +
         `${supporting} candidate(s) supported, ${contradicting} contradicted.`,
