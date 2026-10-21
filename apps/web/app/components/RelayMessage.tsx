@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { BorderlessRelayMode, BorderlessRelayView } from "@devrelay/core";
 
 function serializeMessage(view: BorderlessRelayView): string {
@@ -58,12 +58,10 @@ export function RelayMessage({
   const [mode, setMode] = useState<BorderlessRelayMode>("technical-en");
   const [copyStatus, setCopyStatus] = useState("");
 
-  const selectedView = views.find((item) => item.mode === mode) ?? views[0];
+  const view = views.find((item) => item.mode === mode) ?? views[0];
+  const message = view ? serializeMessage(view) : "";
 
-  if (!selectedView) return null;
-
-  const view = selectedView;
-  const message = useMemo(() => serializeMessage(view), [view]);
+  if (!view) return null;
 
   async function copyMessage() {
     try {
