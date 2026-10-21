@@ -9,6 +9,7 @@
     "check:demo": "pnpm --filter @devrelay/core check:demo",
     "check:github": "node scripts/check-github-adapter.mjs",
     "check:simulated": "node scripts/check-simulated-providers.mjs",
+    "check:reasoning": "node scripts/check-reasoning-agent.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint"
   }

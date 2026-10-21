@@ -6,14 +6,18 @@ import type {
   RootCauseHypothesis,
 } from "./types";
 
+export function evidenceConfidenceCeiling(evidence: Evidence[]): number {
+  const stalePenalty = evidence.filter((item) => item.freshness !== "fresh").length * 0.05;
+  return Math.max(0, Math.min(1, 1 - stalePenalty));
+}
+
 export function buildReasoningPacket(input: {
   incident: Incident;
   evidence: Evidence[];
   hypothesis: RootCauseHypothesis;
   actions?: RecommendedAction[];
 }): CanonicalReasoningPacket {
-  const stalePenalty = input.evidence.filter((item) => item.freshness !== "fresh").length * 0.05;
-  const confidenceCeiling = Math.max(0, Math.min(1, 1 - stalePenalty));
+  const confidenceCeiling = evidenceConfidenceCeiling(input.evidence);
 
   return {
     incident: input.incident,
