@@ -9,6 +9,7 @@ export function InvestigationReview({ run, history }: { run: StoredInvestigation
   const readOnly = current?.id !== run.id;
   return (
     <>
+      <ApprovalGate key={run.id} initialPacket={run.packet} runId={run.id} readOnly={readOnly} />
       <section className="panel" id="history" aria-labelledby="history-title">
         <span className="sectionLabel">Saved investigation history</span>
         <h2 id="history-title">{readOnly ? "Viewing an earlier investigation" : "Current investigation"}</h2>
@@ -23,12 +24,16 @@ export function InvestigationReview({ run, history }: { run: StoredInvestigation
             </li>
           ))}
         </ol>
-        {current && <form action={rerunInvestigation.bind(null, run.incidentId, current.id)}>
+        {current && !readOnly && <form action={rerunInvestigation.bind(null, run.incidentId, current.id)}>
           <SubmitInvestigationButton label="Run investigation again" pendingLabel="Investigating…" />
         </form>}
+        {readOnly && current && (
+          <Link className="primaryButton" href={`/incidents/${run.incidentId}`}>
+            Return to current investigation
+          </Link>
+        )}
         <Link className="inlineLink" href="/audit">Open saved audit history ↗</Link>
       </section>
-      <ApprovalGate key={run.id} initialPacket={run.packet} runId={run.id} readOnly={readOnly} />
     </>
   );
 }
